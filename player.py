@@ -16,11 +16,15 @@ class Idle:
         self.player.frame = (self.player.frame + 1) % 6
 
     def draw(self):
-        self.player.image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
+        if self.player.face_dir == 1:
+            self.player.image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
+        else:
+            self.player.image.clip_composite_draw(self.player.frame * 128, 0, 128, 128, 0, 'h', self.player.x, self.player.y, 128, 128)
 
 class Player:
     def __init__(self):
         self.x, self.y = 400, 90
+        self.face_dir = -1
         self.frame = 0
         self.image = load_image('idle.png')
         self.idle = Idle(self)
