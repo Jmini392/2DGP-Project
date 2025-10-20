@@ -1,17 +1,25 @@
 from pico2d import *
-import player
+from player import Player
 
 # 월드 초기화
 def reset_world():
-    pass
+    global world
+    world = []
+    player = Player()
+    world.append(player)
 
 # 월드 업데이트
 def update_world():
-    pass
+    for o in world:
+        o.update()
+
 
 # 월드 랜더링
 def render_world():
-    pass
+    clear_canvas()
+    for o in world:
+        o.draw()
+    update_canvas()
 
 
 running = True
