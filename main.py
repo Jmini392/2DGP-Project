@@ -10,10 +10,13 @@ def handle_events():
             running = False
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             running = False
+        else:
+            player.handle_event(event)
 
 # 월드 초기화
 def reset_world():
     global world
+    global player
     world = []
     player = Player()
     world.append(player)
@@ -40,6 +43,6 @@ while running:
     handle_events()
     update_world()
     render_world()
-    delay(0.1)
+    delay(0.01)
 
 close_canvas()
