@@ -1,13 +1,32 @@
 from pico2d import *
 
+
+
+class Idle:
+    def __init__(self, player):
+        self.player = player
+
+    def enter(self):
+        pass
+
+    def exit(self):
+        pass
+
+    def do(self):
+        self.player.frame = (self.player.frame + 1) % 6
+
+    def draw(self):
+        self.player.image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
+
 class Player:
     def __init__(self):
         self.x, self.y = 400, 90
         self.frame = 0
         self.image = load_image('idle.png')
+        self.idle = Idle(self)
 
     def update(self):
-        self.frame = (self.frame + 1) % 6
+        self.idle.do()
 
     def draw(self):
-        self.image.clip_draw(self.frame * 128, 0, 128, 128, self.x, self.y)
+        self.idle.draw()
