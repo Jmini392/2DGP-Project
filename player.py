@@ -72,7 +72,7 @@ class Idle:
         self.player = player
 
     def enter(self, e):
-        self.dir = 0
+        self.player.dir = 0
 
     def exit(self, e):
         pass
@@ -101,16 +101,12 @@ class Player:
             self.IDLE, {
                 # 상태 규칙
                 self.IDLE : {
-                    left_down : self.WALK,
-                    right_down : self.WALK,
-                    up_down : self.WALK,
-                    down_down : self.WALK
+                    left_down : self.WALK, right_down : self.WALK,
+                    up_down : self.WALK, down_down : self.WALK
                 },
                 self.WALK : {
-                    left_up : self.IDLE,
-                    right_up : self.IDLE,
-                    up_up : self.IDLE,
-                    down_up : self.IDLE
+                    left_up : self.IDLE, right_up : self.IDLE,
+                    up_up : self.IDLE, down_up : self.IDLE
                 }
             })
 
