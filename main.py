@@ -1,5 +1,8 @@
 from pico2d import *
+
+import game_world
 from player import Player
+from game_world import *
 
 # 이벤트 처리
 def handle_events():
@@ -15,23 +18,18 @@ def handle_events():
 
 # 월드 초기화
 def reset_world():
-    global world
     global player
-    world = []
     player = Player()
-    world.append(player)
+    game_world.add_object(player, 1)
 
 # 월드 업데이트
 def update_world():
-    for o in world:
-        o.update()
-
+    game_world.update()
 
 # 월드 랜더링
 def render_world():
     clear_canvas()
-    for o in world:
-        o.draw()
+    game_world.render()
     update_canvas()
 
 
