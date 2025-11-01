@@ -48,13 +48,19 @@ class Walk:
     def do(self):
         self.player.frame = (self.player.frame + 1) % 8
         if self.player.dir == 1 or self.player.dir == -1:
-            self.player.x += self.player.dir * 5
+            if self.player.run:
+                self.player.x += self.player.dir * 10
+            else:
+                self.player.x += self.player.dir * 5
             if self.player.x < 64:
                 self.player.x = 64
             elif self.player.x > 800 - 64:
                 self.player.x = 800 - 64
         elif self.player.dir == 2 or self.player.dir == -2:
-            self.player.y += self.player.dir / 2 * 5
+            if self.player.run:
+                self.player.y += self.player.dir / 2 * 10
+            else:
+                self.player.y += self.player.dir / 2 * 5
             if self.player.y < 64:
                 self.player.y = 64
             elif self.player.y > 600 - 64:
@@ -62,9 +68,15 @@ class Walk:
 
     def draw(self):
         if self.player.face_dir == 1:
-            self.player.walk_image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
+            if self.player.run:
+                self.player.run_image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
+            else:
+                self.player.walk_image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
         else:
-            self.player.walk_image.clip_composite_draw(self.player.frame * 128, 0, 128, 128, 0, 'h', self.player.x, self.player.y, 128, 128)
+            if self.player.run:
+                self.player.run_image.clip_composite_draw(self.player.frame * 128, 0, 128, 128, 0, 'h', self.player.x, self.player.y, 128, 128)
+            else:
+                self.player.walk_image.clip_composite_draw(self.player.frame * 128, 0, 128, 128, 0, 'h', self.player.x, self.player.y, 128, 128)
 
 
 class Idle:
@@ -93,8 +105,10 @@ class Player:
         self.face_dir = 1
         self.dir = 0
         self.frame = 0
+        self.run = False
         self.idle_image = load_image('idle.png')
         self.walk_image = load_image('Walk.png')
+        self.run_image = load_image('Run.png')
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
         self.state = StateMachine (
@@ -102,11 +116,15 @@ class Player:
                 # 상태 규칙
                 self.IDLE : {
                     left_down : self.WALK, right_down : self.WALK,
-                    up_down : self.WALK, down_down : self.WALK
+                    left_up : self.WALK, right_up : self.WALK,
+                    up_down : self.WALK, down_down : self.WALK,
+                    up_up : self.WALK, down_up : self.WALK,
                 },
                 self.WALK : {
                     left_up : self.IDLE, right_up : self.IDLE,
-                    up_up : self.IDLE, down_up : self.IDLE
+                    left_down : self.IDLE, right_down : self.IDLE,
+                    up_up : self.IDLE, down_up : self.IDLE,
+                    up_down : self.IDLE, down_down : self.IDLE
                 }
             })
 
@@ -118,4 +136,8 @@ class Player:
 
     def handle_event(self, event):
         # 들어온 외부 키입력등을 상태 머신에 전달하기 위해서 튜플화 시킨후 전달
+        if event.type == SDL_KEYDOWN and event.key == SDLK_LCTRL:
+            self.run = True
+        elif event.type == SDL_KEYUP and event.key == SDLK_LCTRL:
+            self.run = False
         self.state.handle_event(('INPUT', event))
