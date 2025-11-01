@@ -31,15 +31,15 @@ class Walk:
         self.player = player
 
     def enter(self, e):
-        if right_down(e):
+        if self.player.key_states['right']:
             self.player.face_dir = 1
             self.player.dir = 1
-        elif left_down(e):
+        elif self.player.key_states['left']:
             self.player.face_dir = -1
             self.player.dir = -1
-        elif up_down(e):
+        elif self.player.key_states['up']:
             self.player.dir = 2
-        elif down_down(e):
+        elif self.player.key_states['down']:
             self.player.dir = -2
 
     def exit(self, e):
@@ -48,7 +48,7 @@ class Walk:
     def do(self):
         self.player.frame = (self.player.frame + 1) % 8
         if self.player.dir == 1 or self.player.dir == -1:
-            if self.player.run:
+            if self.player.key_states['ctrl']:
                 self.player.x += self.player.dir * 10
             else:
                 self.player.x += self.player.dir * 5
@@ -57,7 +57,7 @@ class Walk:
             elif self.player.x > 800 - 64:
                 self.player.x = 800 - 64
         elif self.player.dir == 2 or self.player.dir == -2:
-            if self.player.run:
+            if self.player.key_states['ctrl']:
                 self.player.y += self.player.dir / 2 * 10
             else:
                 self.player.y += self.player.dir / 2 * 5
@@ -68,12 +68,12 @@ class Walk:
 
     def draw(self):
         if self.player.face_dir == 1:
-            if self.player.run:
+            if self.player.key_states['ctrl']:
                 self.player.run_image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
             else:
                 self.player.walk_image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
         else:
-            if self.player.run:
+            if self.player.key_states['ctrl']:
                 self.player.run_image.clip_composite_draw(self.player.frame * 128, 0, 128, 128, 0, 'h', self.player.x, self.player.y, 128, 128)
             else:
                 self.player.walk_image.clip_composite_draw(self.player.frame * 128, 0, 128, 128, 0, 'h', self.player.x, self.player.y, 128, 128)
@@ -105,7 +105,13 @@ class Player:
         self.face_dir = 1
         self.dir = 0
         self.frame = 0
-        self.run = False
+        self.key_states = {
+            'left': False,
+            'right': False,
+            'up': False,
+            'down': False,
+            'ctrl': False
+        }
         self.idle_image = load_image('idle.png')
         self.walk_image = load_image('Walk.png')
         self.run_image = load_image('Run.png')
@@ -136,8 +142,26 @@ class Player:
 
     def handle_event(self, event):
         # 들어온 외부 키입력등을 상태 머신에 전달하기 위해서 튜플화 시킨후 전달
-        if event.type == SDL_KEYDOWN and event.key == SDLK_LCTRL:
-            self.run = True
-        elif event.type == SDL_KEYUP and event.key == SDLK_LCTRL:
-            self.run = False
+        if event.type == SDL_KEYDOWN:
+            if event.key == SDLK_LEFT:
+                self.key_states['left'] = True
+            elif event.key == SDLK_RIGHT:
+                self.key_states['right'] = True
+            elif event.key == SDLK_UP:
+                self.key_states['up'] = True
+            elif event.key == SDLK_DOWN:
+                self.key_states['down'] = True
+            elif event.key == SDLK_LCTRL:
+                self.key_states['ctrl'] = True
+        elif event.type == SDL_KEYUP:
+            if event.key == SDLK_LEFT:
+                self.key_states['left'] = False
+            elif event.key == SDLK_RIGHT:
+                self.key_states['right'] = False
+            elif event.key == SDLK_UP:
+                self.key_states['up'] = False
+            elif event.key == SDLK_DOWN:
+                self.key_states['down'] = False
+            elif event.key == SDLK_LCTRL:
+                self.key_states['ctrl'] = False
         self.state.handle_event(('INPUT', event))
