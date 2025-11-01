@@ -29,8 +29,9 @@ def down_up(e):
 def z_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_z
 
-def z_up(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_z
+def x_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_x
+
 
 idle_attack_end = lambda e: e[0] == 'IDLE_ATTACK_END'
 walk_attack_end = lambda e: e[0] == 'WALK_ATTACK_END'
@@ -65,9 +66,15 @@ class Attack:
 
     def draw(self):
         if self.player.face_dir == 1:
-            self.player.attack_image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
+            if self.player.key_states['x']:
+                self.player.special_attack_image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
+            else:
+                self.player.attack_image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
         else:
-            self.player.attack_image.clip_composite_draw(self.player.frame * 128, 0, 128, 128, 0, 'h', self.player.x, self.player.y, 128, 128)
+            if self.player.key_states['x']:
+                self.player.special_attack_image.clip_composite_draw(self.player.frame * 128, 0, 128, 128, 0, 'h', self.player.x, self.player.y, 128, 128)
+            else:
+                self.player.attack_image.clip_composite_draw(self.player.frame * 128, 0, 128, 128, 0, 'h', self.player.x, self.player.y, 128, 128)
 
 class Walk:
     def __init__(self, player):
@@ -154,12 +161,14 @@ class Player:
             'up': False,
             'down': False,
             'ctrl': False,
-            'z': False
+            'z': False,
+            'x': False
         }
         self.idle_image = load_image('idle.png')
         self.walk_image = load_image('Walk.png')
         self.run_image = load_image('Run.png')
         self.attack_image = load_image('Attack_1.png')
+        self.special_attack_image = load_image('Attack_2.png')
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
         self.ATTACK = Attack(self)
@@ -171,14 +180,14 @@ class Player:
                     left_up : self.WALK, right_up : self.WALK,
                     up_down : self.WALK, down_down : self.WALK,
                     up_up : self.WALK, down_up : self.WALK,
-                    z_down : self.ATTACK
+                    z_down : self.ATTACK, x_down : self.ATTACK
                 },
                 self.WALK : {
                     left_up : self.IDLE, right_up : self.IDLE,
                     left_down : self.IDLE, right_down : self.IDLE,
                     up_up : self.IDLE, down_up : self.IDLE,
                     up_down : self.IDLE, down_down : self.IDLE,
-                    z_down : self.ATTACK
+                    z_down : self.ATTACK, x_down : self.ATTACK
                 },
                 self.ATTACK : {
                     idle_attack_end : self.IDLE, walk_attack_end : self.WALK
@@ -206,6 +215,8 @@ class Player:
                 self.key_states['ctrl'] = True
             elif event.key == SDLK_z:
                 self.key_states['z'] = True
+            elif event.key == SDLK_x:
+                self.key_states['x'] = True
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_LEFT:
                 self.key_states['left'] = False
@@ -219,4 +230,6 @@ class Player:
                 self.key_states['ctrl'] = False
             elif event.key == SDLK_z:
                 self.key_states['z'] = False
+            elif event.key == SDLK_x:
+                self.key_states['x'] = False
         self.state.handle_event(('INPUT', event))
