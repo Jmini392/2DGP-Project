@@ -26,6 +26,31 @@ def down_down(e):
 def down_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_DOWN
 
+def z_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_z
+
+def z_up(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_z
+
+class Attack:
+    def __init__(self, player):
+        self.player = player
+
+    def enter(self, e):
+        pass
+
+    def exit(self, e):
+        pass
+
+    def do(self):
+        self.player.frame = (self.player.frame + 1) % 4
+
+    def draw(self):
+        if self.player.face_dir == 1:
+            self.player.attack_image.clip_draw(self.player.frame * 128, 0, 128, 128, self.player.x, self.player.y)
+        else:
+            self.player.attack_image.clip_composite_draw(self.player.frame * 128, 0, 128, 128, 0, 'h', self.player.x, self.player.y, 128, 128)
+
 class Walk:
     def __init__(self, player):
         self.player = player
@@ -110,13 +135,16 @@ class Player:
             'right': False,
             'up': False,
             'down': False,
-            'ctrl': False
+            'ctrl': False,
+            'z': False
         }
         self.idle_image = load_image('idle.png')
         self.walk_image = load_image('Walk.png')
         self.run_image = load_image('Run.png')
+        self.attack_image = load_image('Attack_1.png')
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
+        self.ATTACK = Attack(self)
         self.state = StateMachine (
             self.IDLE, {
                 # 상태 규칙
@@ -125,13 +153,16 @@ class Player:
                     left_up : self.WALK, right_up : self.WALK,
                     up_down : self.WALK, down_down : self.WALK,
                     up_up : self.WALK, down_up : self.WALK,
+                    z_down : self.ATTACK
                 },
                 self.WALK : {
                     left_up : self.IDLE, right_up : self.IDLE,
                     left_down : self.IDLE, right_down : self.IDLE,
                     up_up : self.IDLE, down_up : self.IDLE,
-                    up_down : self.IDLE, down_down : self.IDLE
-                }
+                    up_down : self.IDLE, down_down : self.IDLE,
+                    z_down : self.ATTACK
+                },
+                self.ATTACK : {}
             })
 
     def update(self):
@@ -153,6 +184,8 @@ class Player:
                 self.key_states['down'] = True
             elif event.key == SDLK_LCTRL:
                 self.key_states['ctrl'] = True
+            elif event.key == SDLK_z:
+                self.key_states['z'] = True
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_LEFT:
                 self.key_states['left'] = False
@@ -164,4 +197,6 @@ class Player:
                 self.key_states['down'] = False
             elif event.key == SDLK_LCTRL:
                 self.key_states['ctrl'] = False
+            elif event.key == SDLK_z:
+                self.key_states['z'] = False
         self.state.handle_event(('INPUT', event))
