@@ -197,7 +197,7 @@ class Idle:
 
 class Player:
     def __init__(self):
-        self.x, self.y = 400, 90
+        self.x, self.y = 100, 200
         self.face_dir = 1
         self.frame = 0
         self.run = False

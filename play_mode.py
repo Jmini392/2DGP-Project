@@ -1,4 +1,5 @@
-from pico2d import *
+# from pico2d import *
+from background import Background
 from player import *
 import game_world
 import framework
@@ -6,11 +7,11 @@ import framework
 player = None
 
 def init():
-    global running
-    running = True
     global player
     player = Player()
     game_world.add_object(player, 1)
+    background = Background()
+    game_world.add_object(background, 0)
 
 def handle_events():
     event_list = get_events()
