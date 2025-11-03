@@ -1,5 +1,7 @@
 from pico2d import *
 from sdl2 import *
+
+import framework
 from state_machine import StateMachine
 
 def right_down(e):
@@ -34,6 +36,17 @@ def x_down(e):
 
 idle_enter = lambda e: e[0] == 'IDLE_ENTER'
 
+#player frame
+TIME_PER_ACTION = 0.8
+ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+FRAMES_PER_ACTION = 8
+# player speed
+PIXEL_PER_METER = (10.0 / 0.3) # 10 pixel 30 cm
+RUN_SPEED_KMPH = 30.0 # Km / Hour
+RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
+RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
+RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
+
 class Attack:
     def __init__(self, player):
         self.player = player
@@ -53,26 +66,26 @@ class Attack:
 
     def do(self):
         if self.normal:
-            self.player.frame = (self.player.frame + 1) % 5
-            if self.player.frame == 4:
+            self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 5
+            if self.player.frame > 4:
                 self.player.state.handle_event(('IDLE_ENTER', None))
         elif self.special:
-            self.player.frame = (self.player.frame + 1) % 6
-            if self.player.frame == 5:
+            self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 6
+            if self.player.frame > 5:
                 self.player.state.handle_event(('IDLE_ENTER', None))
 
 
     def draw(self):
         if self.player.face_dir == 1:
             if self.special:
-                self.player.special_attack_image.clip_draw(self.player.frame * 162, 0, 162, 162, self.player.x, self.player.y)
+                self.player.special_attack_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
             else:
-                self.player.attack_image.clip_draw(self.player.frame * 162, 0, 162, 162, self.player.x, self.player.y)
+                self.player.attack_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
         else:
             if self.special:
-                self.player.special_attack_image.clip_composite_draw(self.player.frame * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
+                self.player.special_attack_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
             else:
-                self.player.attack_image.clip_composite_draw(self.player.frame * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
+                self.player.attack_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
 
 class Walk:
     def __init__(self, player):
@@ -132,11 +145,11 @@ class Walk:
             self.player.state.handle_event(('IDLE_ENTER', None))
             return
 
-        self.player.frame = (self.player.frame + 1) % 8
+        self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 8
         if self.player.run:
-            speed = 10
+            speed = RUN_SPEED_PPS * 2 * framework.frame_time
         else:
-            speed = 5
+            speed = RUN_SPEED_PPS * framework.frame_time
 
         dx = 0
         dy = 0
@@ -156,8 +169,8 @@ class Walk:
         if dx != 0 and dy != 0:
             import math
             normalize = math.sqrt(2)
-            self.player.x += dx * speed / normalize
-            self.player.y += dy * speed / normalize
+            self.player.x += dx * RUN_SPEED_PPS * speed / normalize
+            self.player.y += dy * RUN_SPEED_PPS * speed / normalize
         else:
             self.player.x += dx * speed
             self.player.y += dy * speed
@@ -174,14 +187,14 @@ class Walk:
     def draw(self):
         if self.player.face_dir == 1:
             if self.player.run:
-                self.player.run_image.clip_draw(self.player.frame * 162, 0, 162, 162, self.player.x, self.player.y)
+                self.player.run_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
             else:
-                self.player.walk_image.clip_draw(self.player.frame * 162, 0, 162, 162, self.player.x, self.player.y)
+                self.player.walk_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
         else:
             if self.player.run:
-                self.player.run_image.clip_composite_draw(self.player.frame * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
+                self.player.run_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
             else:
-                self.player.walk_image.clip_composite_draw(self.player.frame * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
+                self.player.walk_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
 
 
 class Idle:
@@ -196,13 +209,13 @@ class Idle:
         pass
 
     def do(self):
-        self.player.frame = (self.player.frame + 1) % 4
+        self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 4
 
     def draw(self):
         if self.player.face_dir == 1:
-            self.player.idle_image.clip_draw(self.player.frame * 162, 0, 162, 162, self.player.x, self.player.y)
+            self.player.idle_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
         else:
-            self.player.idle_image.clip_composite_draw(self.player.frame * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
+            self.player.idle_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
 
 
 class Player:
