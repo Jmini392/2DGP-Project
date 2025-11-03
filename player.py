@@ -90,87 +90,65 @@ class Attack:
 class Walk:
     def __init__(self, player):
         self.player = player
-        self.px, self.py = 0, 0
+        self.key_state = {'left': False, 'right': False, 'up': False, 'down': False}
 
     def enter(self, e):
-        if right_down(e):
-            self.player.face_dir = 1
-            self.player.mx += 1
-            self.px += 1
-        elif left_down(e):
-            self.player.face_dir = -1
-            self.player.mx -= 1
-            self.px += 1
+        if left_down(e):
+            self.key_state['left'] = True
+        elif right_down(e):
+            self.key_state['right'] = True
         elif up_down(e):
-            self.player.my += 1
-            self.py += 1
+            self.key_state['up'] = True
         elif down_down(e):
-            self.player.my -= 1
-            self.py += 1
+            self.key_state['down'] = True
+
+        if self.key_state['right']:
+            self.player.face_dir = 1
+        elif self.key_state['left']:
+            self.player.face_dir = -1
 
     def exit(self, e):
-        if self.px == 2:
-            if right_up(e):
-                self.px -= 1
-                self.player.mx -= 1
-                self.player.face_dir = -1
-            elif left_up(e):
-                self.px -= 1
-                self.player.mx += 1
-                self.player.face_dir = 1
-        if self.py == 2:
-            if up_up(e):
-                self.py -= 1
-                self.player.my -= 1
-            elif down_up(e):
-                self.py -= 1
-                self.player.my += 1
-        if self.px == 1:
-            if right_up(e):
-                self.px -= 1
-                self.player.mx -= 1
-            elif left_up(e):
-                self.px -= 1
-                self.player.mx += 1
-        if self.py == 1:
-            if up_up(e):
-                self.py -= 1
-                self.player.my -= 1
-            if down_up(e):
-                self.py -= 1
-                self.player.my += 1
+        if left_up(e):
+            self.key_state['left'] = False
+        elif right_up(e):
+            self.key_state['right'] = False
+        elif up_up(e):
+            self.key_state['up'] = False
+        elif down_up(e):
+            self.key_state['down'] = False
+
+        if self.key_state['right']:
+            self.player.face_dir = 1
+        elif self.key_state['left']:
+            self.player.face_dir = -1
 
     def do(self):
-        if self.player.mx == 0 and self.player.my == 0 and self.px == 0 and self.py == 0:
+        if not any(self.key_state.values()):
             self.player.state.handle_event(('IDLE_ENTER', None))
             return
-
-        self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 8
-        if self.player.run:
-            speed = RUN_SPEED_PPS * 2 * framework.frame_time
-        else:
-            speed = RUN_SPEED_PPS * framework.frame_time
 
         dx = 0
         dy = 0
 
-        if self.player.mx == 1:
-            dx = 1
-            self.player.face_dir = 1
-        elif self.player.mx == -1:
-            dx = -1
-            self.player.face_dir = -1
-        if self.player.my == 1:
-            dy = 1
-        elif self.player.my == -1:
-            dy = -1
+        if self.key_state['right']:
+            dx += 1
+        if self.key_state['left']:
+            dx -= 1
+        if self.key_state['up']:
+            dy += 1
+        if self.key_state['down']:
+            dy -= 1
 
-        # 대각선 이동 시 속도 정규화
+        self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 8
+        speed = RUN_SPEED_PPS * framework.frame_time
+        if self.player.run:
+            speed *= 2
+
         if dx != 0 and dy != 0:
             import math
-            normalize = math.sqrt(2)
-            self.player.x += dx * RUN_SPEED_PPS * speed / normalize
-            self.player.y += dy * RUN_SPEED_PPS * speed / normalize
+            normalize = speed / math.sqrt(2)
+            self.player.x += dx * normalize
+            self.player.y += dy * normalize
         else:
             self.player.x += dx * speed
             self.player.y += dy * speed
@@ -202,8 +180,7 @@ class Idle:
         self.player = player
 
     def enter(self, e):
-        self.player.mx = 0
-        self.player.my = 0
+        pass
 
     def exit(self, e):
         pass
@@ -222,7 +199,6 @@ class Player:
     def __init__(self):
         self.x, self.y = 400, 90
         self.face_dir = 1
-        self.mx, self.my = 0, 0
         self.frame = 0
         self.run = False
         self.idle_image = load_image('sprite/idle.png')
@@ -242,10 +218,10 @@ class Player:
                     z_down : self.ATTACK, x_down : self.ATTACK
                 },
                 self.WALK : {
-                    left_up : self.WALK, right_up : self.WALK,
-                    up_up : self.WALK, down_up : self.WALK,
                     left_down: self.WALK, right_down: self.WALK,
-                    up_down : self.WALK, down_down : self.WALK,
+                    up_down: self.WALK, down_down: self.WALK,
+                    left_up: self.WALK, right_up: self.WALK,
+                    up_up: self.WALK, down_up: self.WALK,
                     idle_enter : self.IDLE
                 },
                 self.ATTACK : { idle_enter : self.IDLE }
