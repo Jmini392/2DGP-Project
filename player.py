@@ -239,7 +239,11 @@ class Player:
 
     def draw(self):
         self.state.draw()
-        self.font.draw(self.x - 10, self.y + 50, f'self.item:{self.item}, num:{self.inventory.get(self.item)}', (255, 255, 0))
+        draw_rectangle(*self.get_bb())
+        self.font.draw(self.x - 40, self.y + 80, f'self.item:{self.item}, num:{self.inventory.get(self.item)}', (255, 255, 0))
+
+    def get_bb(self):
+        return self.x - 30, self.y - 70, self.x + 30, self.y + 70
 
     def handle_event(self, event):
         # 들어온 외부 키입력등을 상태 머신에 전달하기 위해서 튜플화 시킨후 전달
