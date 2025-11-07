@@ -202,6 +202,11 @@ class Player:
         self.frame = 0
         self.run = False
         self.item = None
+        self.inventory = {
+            'speed': 10,
+            'strong': 10,
+            'health': 0
+        }
         self.font = load_font('ENCR10B.TTF', 16)
         self.idle_image = load_image('sprite/idle.png')
         self.walk_image = load_image('sprite/Walk.png')
@@ -234,7 +239,7 @@ class Player:
 
     def draw(self):
         self.state.draw()
-        self.font.draw(self.x - 10, self.y + 50, f'self.item:{self.item}', (255, 255, 0))
+        self.font.draw(self.x - 10, self.y + 50, f'self.item:{self.item}, num:{self.inventory.get(self.item)}', (255, 255, 0))
 
     def handle_event(self, event):
         # 들어온 외부 키입력등을 상태 머신에 전달하기 위해서 튜플화 시킨후 전달
@@ -248,7 +253,10 @@ class Player:
             elif event.key == SDLK_3:
                 self.item = 'health'
             elif event.key == SDLK_c:
-                self.item = 'idle'
+                if self.inventory.get(self.item) > 0:
+                    self.inventory[self.item] -= 1
+                else:
+                    self.item = 'none'
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_LCTRL:
                 self.run = False
