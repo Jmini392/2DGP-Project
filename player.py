@@ -37,7 +37,7 @@ def x_down(e):
 idle_enter = lambda e: e[0] == 'IDLE_ENTER'
 
 #player frame
-TIME_PER_ACTION = 0.8
+TIME_PER_ACTION = 1.0
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 8
 # player speed
@@ -50,39 +50,33 @@ RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 class Attack:
     def __init__(self, player):
         self.player = player
-        self.normal = False
-        self.special = False
 
     def enter(self, e):
         self.player.frame = 0
-        if z_down(e):
-            self.normal = True
-        elif x_down(e):
-            self.special = True
+        if x_down(e):
+            self.player.special_attack = True
 
     def exit(self, e):
-        self.normal = False
-        self.special = False
+        self.player.special_attack = False
 
     def do(self):
-        if self.normal:
-            self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 5
-            if self.player.frame > 4:
-                self.player.state.handle_event(('IDLE_ENTER', None))
-        elif self.special:
+        if self.player.special_attack:
             self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 6
             if self.player.frame > 5:
                 self.player.state.handle_event(('IDLE_ENTER', None))
-
+        else:
+            self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 5
+            if self.player.frame > 4:
+                self.player.state.handle_event(('IDLE_ENTER', None))
 
     def draw(self):
         if self.player.face_dir == 1:
-            if self.special:
+            if self.player.special_attack:
                 self.player.special_attack_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
             else:
                 self.player.attack_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
         else:
-            if self.special:
+            if self.player.special_attack:
                 self.player.special_attack_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
             else:
                 self.player.attack_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
@@ -201,7 +195,8 @@ class Player:
         self.face_dir = 1
         self.frame = 0
         self.run = False
-        self.item = None
+        self.special_attack = False
+        self.item = 'speed'
         self.inventory = {
             'speed': 10,
             'strong': 10,
@@ -240,9 +235,21 @@ class Player:
     def draw(self):
         self.state.draw()
         draw_rectangle(*self.get_bb())
-        self.font.draw(self.x - 40, self.y + 80, f'self.item:{self.item}, num:{self.inventory.get(self.item)}', (255, 255, 0))
+        self.font.draw(self.x - 40, self.y + 80, f'item:{self.item}, num:{self.inventory.get(self.item)}', (255, 255, 0))
 
     def get_bb(self):
+        cur = getattr(self.state, 'cur_state', None)
+        if cur is self.ATTACK:
+            if self.face_dir == 1:
+                if self.special_attack:
+                    return self.x + 10, self.y - 30, self.x + 70, self.y + 30
+                else:
+                    return self.x + 30, self.y + 10, self.x + 60, self.y + 30
+            else:
+                if self.special_attack:
+                    return self.x - 70, self.y - 30, self.x - 10, self.y + 30
+                else:
+                    return self.x - 60, self.y + 10, self.x - 30, self.y + 30
         return self.x - 30, self.y - 70, self.x + 30, self.y + 70
 
     def handle_event(self, event):
@@ -259,8 +266,8 @@ class Player:
             elif event.key == SDLK_c:
                 if self.inventory.get(self.item) > 0:
                     self.inventory[self.item] -= 1
-                else:
-                    self.item = 'none'
+                elif self.inventory.get(self.item) == 0:
+                    print(f'No {self.item} item left!')
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_LCTRL:
                 self.run = False
