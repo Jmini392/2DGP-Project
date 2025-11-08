@@ -168,7 +168,6 @@ class Walk:
             else:
                 self.player.walk_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
 
-
 class Idle:
     def __init__(self, player):
         self.player = player
@@ -188,7 +187,6 @@ class Idle:
         else:
             self.player.idle_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
 
-
 class Player:
     def __init__(self):
         self.x, self.y = 100, 200
@@ -198,9 +196,10 @@ class Player:
         self.special_attack = False
         self.item = 'speed'
         self.inventory = {
-            'speed': 10,
-            'strong': 10,
-            'health': 0
+            'speed': 0,
+            'strong': 0,
+            'health': 0,
+            'money': 0
         }
         self.font = load_font('ENCR10B.TTF', 16)
         self.idle_image = load_image('sprite/idle.png')
@@ -211,8 +210,7 @@ class Player:
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
         self.ATTACK = Attack(self)
-        self.state = StateMachine (
-            self.IDLE, {
+        self.state = StateMachine (self.IDLE, {
                 # 상태 규칙
                 self.IDLE : {
                     left_down : self.WALK, right_down : self.WALK,
@@ -275,5 +273,4 @@ class Player:
 
     def handle_collision(self, group, other):
         if group == 'player:item':
-            self.item = 'health'
-            self.inventory[self.item] += 1
+            self.inventory[other.list[other.type]] += 1

@@ -4,6 +4,7 @@ from player import *
 from item import Item
 import game_world
 import framework
+import random
 
 player = None
 
@@ -11,12 +12,8 @@ def init():
     global player
     player = Player()
     game_world.add_object(player, 1)
-    item = Item()
-    game_world.add_object(item, 1)
-    background = Background()
+    background = Background(2)
     game_world.add_object(background, 0)
-    game_world.add_collision_pair('player:item', player, None)
-    game_world.add_collision_pair('player:item', None, item)
 
 def handle_events():
     event_list = get_events()

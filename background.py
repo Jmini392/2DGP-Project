@@ -3,8 +3,8 @@ from pico2d import load_image
 background = ['sprite/Fieldground.png', 'sprite/Forestground.png', 'sprite/Battleground.png']
 
 class Background:
-    def __init__(self):
-        self.stage = 0
+    def __init__(self,stage = 0):
+        self.stage = stage
         self.image = load_image(background[self.stage])
 
     def draw(self):
