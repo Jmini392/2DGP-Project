@@ -18,6 +18,7 @@ def init():
     game_world.add_object(enemy, 1)
     game_world.add_collision_pair( 'player:enemy', player, None)
     game_world.add_collision_pair('player:enemy', None, enemy)
+    game_world.add_collision_pair( 'player:item', player, None)
 
 def handle_events():
     event_list = get_events()
