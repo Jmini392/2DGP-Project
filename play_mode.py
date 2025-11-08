@@ -1,6 +1,7 @@
 # from pico2d import *
 from background import Background
 from player import *
+from item import Item
 import game_world
 import framework
 
@@ -10,8 +11,12 @@ def init():
     global player
     player = Player()
     game_world.add_object(player, 1)
+    item = Item()
+    game_world.add_object(item, 1)
     background = Background()
     game_world.add_object(background, 0)
+    game_world.add_collision_pair('player:item', player, None)
+    game_world.add_collision_pair('player:item', None, item)
 
 def handle_events():
     event_list = get_events()
@@ -25,6 +30,7 @@ def handle_events():
 
 def update():
     game_world.update()
+    game_world.handle_collisions()
 
 def draw():
     clear_canvas()

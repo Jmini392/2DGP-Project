@@ -265,3 +265,8 @@ class Player:
             if event.key == SDLK_LCTRL:
                 self.run = False
         self.state.handle_event(('INPUT', event))
+
+    def handle_collision(self, group, other):
+        if group == 'player:item':
+            self.item = 'health'
+            self.inventory[self.item] += 1

@@ -1,4 +1,5 @@
 from pico2d import *
+import game_world
 
 class Item:
     def __init__(self):
@@ -18,3 +19,7 @@ class Item:
 
     def update(self):
         pass
+
+    def handle_collision(self, group, other):
+        if group == 'player:item':
+            game_world.remove_object(self)
