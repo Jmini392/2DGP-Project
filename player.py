@@ -3,6 +3,7 @@ from sdl2 import *
 
 import framework
 from state_machine import StateMachine
+import time
 
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
@@ -53,10 +54,14 @@ class Attack:
 
     def enter(self, e):
         self.player.frame = 0
+        if self.player.is_strong_boosted():
+            self.player.power += 10
         if x_down(e):
             self.player.special_attack = True
+            self.player.power += 10
 
     def exit(self, e):
+        self.player.power = 10
         self.player.special_attack = False
 
     def do(self):
@@ -137,6 +142,8 @@ class Walk:
         speed = RUN_SPEED_PPS * framework.frame_time
         if self.player.run:
             speed *= 2
+        if self.player.is_speed_boosted():
+            speed *= 1.5
 
         if dx != 0 and dy != 0:
             import math
@@ -189,16 +196,22 @@ class Idle:
 
 class Player:
     def __init__(self):
+        self.speed_boost_end_time = 0
+        self.strong_boost_end_time = 0
         self.x, self.y = 100, 200
         self.face_dir = 1
         self.frame = 0
         self.run = False
+        self.health = 50
+        self.max_health = 100
+        self.power = 10
         self.special_attack = False
         self.item = 'speed'
+        self.use = False
         self.inventory = {
-            'speed': 0,
-            'strong': 0,
-            'health': 0,
+            'speed': 3,
+            'strong': 3,
+            'health': 3,
             'money': 0
         }
         self.font = load_font('ENCR10B.TTF', 16)
@@ -233,7 +246,13 @@ class Player:
     def draw(self):
         self.state.draw()
         draw_rectangle(*self.get_bb())
-        self.font.draw(self.x - 40, self.y + 80, f'item:{self.item}, num:{self.inventory.get(self.item)}', (255, 255, 0))
+        self.font.draw(self.x - 60, self.y + 80 , f'HP: {self.health}/{self.max_health}', (255, 255, 0))
+        self.font.draw(self.x - 60, self.y + 100 , f'POWER: {self.power}', (255, 255, 0))
+        self.font.draw(self.x - 60, self.y + 120, f'item:{self.item}, num:{self.inventory.get(self.item)}', (255, 255, 0))
+        if self.is_speed_boosted():
+            self.font.draw(self.x - 60, self.y + 140, 'SPEED!', (0, 255, 255))
+        if self.is_strong_boosted():
+            self.font.draw(self.x - 60, self.y + 140, 'STRONG!', (255, 0, 0))
 
     def get_bb(self):
         cur = getattr(self.state, 'cur_state', None)
@@ -250,6 +269,24 @@ class Player:
                     return self.x - 60, self.y + 10, self.x - 30, self.y + 30
         return self.x - 30, self.y - 70, self.x + 30, self.y + 70
 
+    def use_item(self, item_type):
+        current_time = time.time()
+        if item_type == 'speed':
+            self.speed_boost_end_time = current_time + 5.0
+        elif item_type == 'strong':
+            self.strong_boost_end_time = current_time + 5.0
+        elif item_type == 'health':
+            heal_amount = 30
+            self.health += heal_amount
+            if self.health > self.max_health:
+                self.health = self.max_health
+
+    def is_speed_boosted(self):
+        return time.time() < self.speed_boost_end_time
+
+    def is_strong_boosted(self):
+        return time.time() < self.strong_boost_end_time
+
     def handle_event(self, event):
         # 들어온 외부 키입력등을 상태 머신에 전달하기 위해서 튜플화 시킨후 전달
         if event.type == SDL_KEYDOWN:
@@ -263,6 +300,7 @@ class Player:
                 self.item = 'health'
             elif event.key == SDLK_c:
                 if self.inventory.get(self.item) > 0:
+                    self.use_item(self.item)
                     self.inventory[self.item] -= 1
                 elif self.inventory.get(self.item) == 0:
                     print(f'No {self.item} item left!')
