@@ -5,8 +5,13 @@ from enemy import Enemy
 import game_world
 import framework
 import random
+import time
 
 player = None
+
+# 충돌 쿨다운(초)
+COLLISION_COOLDOWN = 0.5
+LAST_COLLISION_TIME = 0.0
 
 def init():
     global player
@@ -31,8 +36,12 @@ def handle_events():
             player.handle_event(event)
 
 def update():
+    global LAST_COLLISION_TIME
     game_world.update()
-    game_world.handle_collisions()
+    now = time.time()
+    if now - LAST_COLLISION_TIME >= COLLISION_COOLDOWN:
+        game_world.handle_collisions()
+        LAST_COLLISION_TIME = now
 
 def draw():
     clear_canvas()
