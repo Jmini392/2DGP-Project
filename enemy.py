@@ -17,12 +17,14 @@ class Enemy:
         self.health = health
         self.attack_power = attack_power
         self.frame = 0
+        self.font = load_font('ENCR10B.TTF', 16)
         if name == 'Gorgon':
             self.image = load_image(gorgon_image[0])
 
     def draw(self):
         self.image.clip_composite_draw(int(self.frame) * 128, 0, 128, 128, 0, 'h', self.x, self.y, 128, 128)
         draw_rectangle(*self.get_bb())
+        self.font.draw(self.x - 30, self.y + 50, f'HP: {self.health}', (255, 0, 0))
 
     def get_bb(self):
         return self.x - 30, self.y - 100, self.x + 50, self.y + 30
@@ -32,8 +34,11 @@ class Enemy:
 
     def handle_collision(self, group, other):
         if group == 'player:enemy':
-            game_world.remove_object(self)
-            # 아이템 드랍
-            dropped_item = item.Item(self.x + 10, self.y - 20, 0)
-            game_world.add_object(dropped_item, 1)
-            game_world.add_collision_pair('player:item', None, dropped_item)
+            # 적 체력 감소
+            self.health -= other.power
+            if self.health <= 0:
+                game_world.remove_object(self)
+                # 아이템 드랍
+                dropped_item = item.Item(self.x + 10, self.y - 20, 1)
+                game_world.add_object(dropped_item, 1)
+                game_world.add_collision_pair('player:item', None, dropped_item)
