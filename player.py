@@ -2,8 +2,10 @@ from pico2d import *
 from sdl2 import *
 
 import framework
+import game_world
 from state_machine import StateMachine
 import time
+import attack
 
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
@@ -51,6 +53,7 @@ RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 class Attack:
     def __init__(self, player):
         self.player = player
+        self.attacking = None
 
     def enter(self, e):
         self.player.frame = 0
@@ -58,11 +61,13 @@ class Attack:
             self.player.power += 10
         if x_down(e):
             self.player.special_attack = True
-            self.player.power += 10
+        self.attacking = attack.Attack(self.player)
+        game_world.add_object(self.attacking, 1)
+        game_world.add_collision_pair('attack:enemy', self.attacking, None)
 
     def exit(self, e):
-        self.player.power = 10
         self.player.special_attack = False
+        game_world.remove_object(self.attacking)
 
     def do(self):
         if self.player.special_attack:
@@ -255,18 +260,6 @@ class Player:
             self.font.draw(self.x - 60, self.y + 140, 'STRONG!', (255, 0, 0))
 
     def get_bb(self):
-        cur = getattr(self.state, 'cur_state', None)
-        if cur is self.ATTACK:
-            if self.face_dir == 1:
-                if self.special_attack:
-                    return self.x + 10, self.y - 30, self.x + 70, self.y + 30
-                else:
-                    return self.x + 30, self.y + 10, self.x + 60, self.y + 30
-            else:
-                if self.special_attack:
-                    return self.x - 70, self.y - 30, self.x - 10, self.y + 30
-                else:
-                    return self.x - 60, self.y + 10, self.x - 30, self.y + 30
         return self.x - 30, self.y - 70, self.x + 30, self.y + 70
 
     def use_item(self, item_type):
@@ -312,3 +305,5 @@ class Player:
     def handle_collision(self, group, other):
         if group == 'player:item':
             self.inventory[other.list[other.type]] += 1
+        if group == 'player:enemy':
+            self.health -= other.attack_power

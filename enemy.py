@@ -33,9 +33,9 @@ class Enemy:
         self.frame = (self.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 4
 
     def handle_collision(self, group, other):
-        if group == 'player:enemy':
+        if group == 'attack:enemy':
             # 적 체력 감소
-            self.health -= other.power
+            self.health -= other.damage
             if self.health <= 0:
                 game_world.remove_object(self)
                 # 아이템 드랍

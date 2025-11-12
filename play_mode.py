@@ -22,13 +22,10 @@ def init():
     game_world.add_object(background, 0)
     enemy = Enemy(600, 200, 'Gorgon', 100, 10)
     game_world.add_object(enemy, 1)
-    items = [Item(200 * i + 100,40 ,i) for i in range(3)]
-    for item in items:
-        game_world.add_object(item, 1)
-        game_world.add_collision_pair('player:item', None, item)
-    game_world.add_collision_pair('player:item', player, None)
     game_world.add_collision_pair( 'player:enemy', player, None)
-    game_world.add_collision_pair('player:enemy', None, enemy)
+    game_world.add_collision_pair( 'player:item', player, None)
+    game_world.add_collision_pair( 'player:enemy', None, enemy)
+    game_world.add_collision_pair('attack:enemy', None, enemy)
 
 
 
