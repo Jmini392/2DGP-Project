@@ -1,12 +1,17 @@
-# from pico2d import *
+from pico2d import *
 from background import Background
+from merchant import Merchant
 from player import *
 from enemy import Enemy
 from item import Item
+from merchant import Merchant
+from shop import Shop
 import game_world
 import framework
 import random
 import time
+
+
 
 player = None
 
@@ -16,16 +21,25 @@ LAST_COLLISION_TIME = 0.0
 
 def init():
     global player
+    # 객체들 생성
     player = Player()
-    game_world.add_object(player, 1)
     background = Background(2)
+    # enemy = Enemy(600, 200, 'Gorgon', 100, 10)
+    merchant = Merchant()
+    shop = Shop()
+
+    # 게임 월드에 객체들 추가
+    game_world.add_object(player, 1)
     game_world.add_object(background, 0)
-    enemy = Enemy(600, 200, 'Gorgon', 100, 10)
-    game_world.add_object(enemy, 1)
+    # game_world.add_object(enemy, 1)
+    game_world.add_object(merchant, 0)
+    game_world.add_object(shop, 0)
+
+    # 충돌 쌍 등록
     game_world.add_collision_pair( 'player:enemy', player, None)
     game_world.add_collision_pair( 'player:item', player, None)
-    game_world.add_collision_pair( 'player:enemy', None, enemy)
-    game_world.add_collision_pair('attack:enemy', None, enemy)
+    # game_world.add_collision_pair( 'player:enemy', None, enemy)
+    # game_world.add_collision_pair('attack:enemy', None, enemy)
 
 
 
