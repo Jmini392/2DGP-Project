@@ -201,16 +201,17 @@ class Idle:
 
 class Player:
     def __init__(self):
-        self.speed_boost_end_time = 0
-        self.strong_boost_end_time = 0
         self.x, self.y = 100, 200
         self.face_dir = 1
         self.frame = 0
+
         self.run = False
+        self.special_attack = False
+
         self.health = 50
         self.max_health = 100
-        self.power = 10
-        self.special_attack = False
+
+
         self.item = 'speed'
         self.use = False
         self.inventory = {
@@ -219,12 +220,16 @@ class Player:
             'health': 3,
             'money': 0
         }
+        self.speed_boost_end_time = 0
+        self.strong_boost_end_time = 0
+
         self.font = load_font('ENCR10B.TTF', 16)
         self.idle_image = load_image('sprite/idle.png')
         self.walk_image = load_image('sprite/Walk.png')
         self.run_image = load_image('sprite/Run.png')
         self.attack_image = load_image('sprite/Attack_1.png')
         self.special_attack_image = load_image('sprite/Attack_2.png')
+
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
         self.ATTACK = Attack(self)
@@ -251,9 +256,6 @@ class Player:
     def draw(self):
         self.state.draw()
         draw_rectangle(*self.get_bb())
-        self.font.draw(self.x - 60, self.y + 80 , f'HP: {self.health}/{self.max_health}', (255, 255, 0))
-        self.font.draw(self.x - 60, self.y + 100 , f'POWER: {self.power}', (255, 255, 0))
-        self.font.draw(self.x - 60, self.y + 120, f'item:{self.item}, num:{self.inventory.get(self.item)}', (255, 255, 0))
         if self.is_speed_boosted():
             self.font.draw(self.x - 60, self.y + 140, 'SPEED!', (0, 255, 255))
         if self.is_strong_boosted():
@@ -306,4 +308,5 @@ class Player:
         if group == 'player:item':
             self.inventory[other.list[other.type]] += 1
         if group == 'player:enemy':
-            self.health -= other.attack_power
+            if self.health > 0:
+                self.health -= other.attack_power
