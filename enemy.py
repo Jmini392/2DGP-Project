@@ -2,6 +2,7 @@ from pico2d import *
 import framework
 import game_world
 import item
+import random
 
 gorgon_image = ['sprite/Gorgon_idle.png']
 
@@ -39,6 +40,7 @@ class Enemy:
             if self.health <= 0:
                 game_world.remove_object(self)
                 # 아이템 드랍
-                dropped_item = item.Item(self.x + 10, self.y - 20, 1)
-                game_world.add_object(dropped_item, 1)
-                game_world.add_collision_pair('player:item', None, dropped_item)
+                if (random.random() < 0.5):  # 50% 확률로 아이템 드랍
+                    dropped_item = item.Item(self.x + 10, self.y - 20, random.randint(0, 2))
+                    game_world.add_object(dropped_item, 1)
+                    game_world.add_collision_pair('player:item', None, dropped_item)

@@ -1,6 +1,4 @@
 from pico2d import *
-#zimport game_world
-#import player
 
 class Attack:
     def __init__(self, player):
