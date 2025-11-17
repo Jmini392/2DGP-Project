@@ -161,12 +161,12 @@ class Walk:
 
         if self.player.x < 64:
             self.player.x = 64
-        elif self.player.x > 800 - 64:
-            self.player.x = 800 - 64
+        elif self.player.x > 1280 - 64:
+            self.player.x = 1280 - 64
         if self.player.y < 64:
             self.player.y = 64
-        elif self.player.y > 600 - 64:
-            self.player.y = 600 - 64
+        elif self.player.y > 450 - 64:
+            self.player.y = 450 - 64
 
     def draw(self):
         if self.player.face_dir == 1:
@@ -283,7 +283,6 @@ class Player:
         return time.time() < self.strong_boost_end_time
 
     def handle_event(self, event):
-        # 들어온 외부 키입력등을 상태 머신에 전달하기 위해서 튜플화 시킨후 전달
         if event.type == SDL_KEYDOWN:
             if event.key == SDLK_LCTRL:
                 self.run = True
@@ -302,6 +301,7 @@ class Player:
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_LCTRL:
                 self.run = False
+        # 들어온 외부 키입력등을 상태 머신에 전달하기 위해서 튜플화 시킨후 전달
         self.state.handle_event(('INPUT', event))
 
     def handle_collision(self, group, other):
@@ -310,3 +310,5 @@ class Player:
         if group == 'player:enemy':
             if self.health > 0:
                 self.health -= other.attack_power
+            if self.health <= 0:
+                self.health = 0

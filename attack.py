@@ -14,16 +14,16 @@ class Attack:
         pass
 
     def get_bb(self):
-        if self.face_dir == 1:
-            if self.special_attack:
+        if self.special_attack:
+            if self.face_dir == 1:
                 return self.x + 30, self.y - 60, self.x + 90, self.y
             else:
-                return self.x + 30, self.y - 10, self.x + 60, self.y + 10
+                return self.x - 90, self.y - 60, self.x - 30, self.y
         else:
-            if self.special_attack:
-                return self.x - 30, self.y - 60, self.x - 90, self.y
+            if self.face_dir == 1:
+                return self.x + 30, self.y - 10, self.x + 60, self.y + 10
             else:
-                return self.x - 30, self.y - 10, self.x - 60, self.y + 10
+                return self.x - 60, self.y - 10, self.x - 30, self.y + 10
 
     def handle_collision(self, group, other):
         pass
