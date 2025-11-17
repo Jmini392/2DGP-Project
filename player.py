@@ -56,18 +56,21 @@ class Attack:
         self.attacking = None
 
     def enter(self, e):
+        if x_down(e):
+            self.player.special_attack_time = time.time() + 5.0
+            self.player.special_attack = True
         self.player.frame = 0
         if self.player.is_strong_boosted():
-            self.player.power += 10
-        if x_down(e):
-            self.player.special_attack = True
-        self.attacking = attack.Attack(self.player)
+            self.attacking = attack.Attack(self.player, 50)
+        else:
+            self.attacking = attack.Attack(self.player, 10)
         game_world.add_object(self.attacking, 1)
         game_world.add_collision_pair('attack:enemy', self.attacking, None)
 
     def exit(self, e):
         self.player.special_attack = False
-        game_world.remove_object(self.attacking)
+        if self.attacking:
+            game_world.remove_object(self.attacking)
 
     def do(self):
         if self.player.special_attack:
@@ -211,7 +214,6 @@ class Player:
         self.health = 50
         self.max_health = 100
 
-
         self.item = 'speed'
         self.use = False
         self.inventory = {
@@ -222,6 +224,8 @@ class Player:
         }
         self.speed_boost_end_time = 0
         self.strong_boost_end_time = 0
+        self.item_cooldown = 0
+        self.special_attack_time = 0
 
         self.font = load_font('ENCR10B.TTF', 16)
         self.idle_image = load_image('sprite/idle.png')
@@ -255,11 +259,7 @@ class Player:
 
     def draw(self):
         self.state.draw()
-        draw_rectangle(*self.get_bb())
-        if self.is_speed_boosted():
-            self.font.draw(self.x - 60, self.y + 140, 'SPEED!', (0, 255, 255))
-        if self.is_strong_boosted():
-            self.font.draw(self.x - 60, self.y + 140, 'STRONG!', (255, 0, 0))
+        draw_rectangle(*self.get_bb())\
 
     def get_bb(self):
         return self.x - 30, self.y - 70, self.x + 30, self.y + 70
@@ -284,6 +284,8 @@ class Player:
 
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
+            if event.key == SDLK_x and time.time() < self.special_attack_time:
+                return
             if event.key == SDLK_LCTRL:
                 self.run = True
             if event.key == SDLK_1:
@@ -293,6 +295,9 @@ class Player:
             elif event.key == SDLK_3:
                 self.item = 'health'
             elif event.key == SDLK_c:
+                if time.time() < self.item_cooldown:
+                    return
+                self.item_cooldown = time.time() + 1.0
                 if self.inventory.get(self.item) > 0:
                     self.use_item(self.item)
                     self.inventory[self.item] -= 1

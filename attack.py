@@ -1,11 +1,14 @@
 from pico2d import *
 
 class Attack:
-    def __init__(self, player):
+    def __init__(self, player, damage = 10):
         self.face_dir = player.face_dir
         self.x, self.y = player.x, player.y + 25
         self.special_attack = player.special_attack
-        self.damage = 40 if self.special_attack else 10
+        if self.special_attack:
+            self.damage = damage + 50
+        else:
+            self.damage = damage
 
     def draw(self):
         draw_rectangle(*self.get_bb())
