@@ -99,26 +99,26 @@ class Wizard:
     def draw(self):
         if self.face_dir == -1:
             if self.attack:
-                self.attack_image.clip_composite_draw(int(self.frame) * 128, 0, 128, 128, 0, 'h', self.x, self.y, 128, 128)
+                self.attack_image.clip_composite_draw(int(self.frame) * 128, 0, 128, 128, 0, 'h', self.x, self.y, 200, 200)
             elif self.die:
-                self.die_image.clip_composite_draw(int(self.frame) * 128, 0, 128, 128, 0, 'h', self.x, self.y, 128, 128)
+                self.die_image.clip_composite_draw(int(self.frame) * 128, 0, 128, 128, 0, 'h', self.x, self.y, 200, 200)
             elif self.walk:
-                self.walk_image.clip_composite_draw(int(self.frame) * 128, 0, 128, 128, 0, 'h', self.x, self.y, 128, 128)
+                self.walk_image.clip_composite_draw(int(self.frame) * 128, 0, 128, 128, 0, 'h', self.x, self.y, 200, 200)
             else:
-                self.idle_image.clip_composite_draw(int(self.frame) * 128, 0, 128, 128, 0, 'h', self.x, self.y, 128, 128)
+                self.idle_image.clip_composite_draw(int(self.frame) * 128, 0, 128, 128, 0, 'h', self.x, self.y, 200, 200)
         else:
             if self.attack:
-                self.attack_image.clip_draw(int(self.frame) * 128, 0, 128, 128, self.x, self.y, 128, 128)
+                self.attack_image.clip_draw(int(self.frame) * 128, 0, 128, 128, self.x, self.y, 200, 200)
             elif self.die:
-                self.die_image.clip_draw(int(self.frame) * 128, 0, 128, 128, self.x, self.y, 128, 128)
+                self.die_image.clip_draw(int(self.frame) * 128, 0, 128, 128, self.x, self.y, 200, 200)
             elif self.walk:
-                self.walk_image.clip_draw(int(self.frame) * 128, 0, 128, 128, self.x, self.y, 128, 128)
+                self.walk_image.clip_draw(int(self.frame) * 128, 0, 128, 128, self.x, self.y, 200, 200)
             else:
-                self.idle_image.clip_draw(int(self.frame) * 128, 0, 128, 128, self.x, self.y, 128, 128)
+                self.idle_image.clip_draw(int(self.frame) * 128, 0, 128, 128, self.x, self.y, 200, 200)
         draw_rectangle(*self.get_bb())
 
     def get_bb(self):
-        return self.x - 10, self.y - 70, self.x + 40, self.y + 10
+        return self.x - 10, self.y - 100, self.x + 50, self.y + 10
 
     def update(self):
         if self.die or self.walk:
