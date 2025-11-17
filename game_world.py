@@ -20,6 +20,12 @@ def render():
         for o in layer:
             o.draw()
 
+def is_empty():
+    # 플레이어 제외에 아무것도 없으면
+    if len(world[1]) == 1:
+        return False
+    return True
+
 def remove_object(o):
     for layer in world:
         if o in layer:
