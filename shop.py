@@ -28,5 +28,4 @@ class Shop:
         return self.shop_x - 170, self.shop_y - 110, self.shop_x + 100, self.shop_y + 100
 
     def handle_collision(self, group, other):
-        if group == 'player:shop':
-            print("Shop Collision with Player")
+        pass

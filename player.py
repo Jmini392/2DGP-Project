@@ -226,6 +226,7 @@ class Player:
         self.strong_boost_end_time = 0
         self.item_cooldown = 0
         self.special_attack_time = 0
+        self.shopping = False
 
         self.font = load_font('ENCR10B.TTF', 16)
         self.idle_image = load_image('sprite/idle.png')
@@ -317,3 +318,5 @@ class Player:
                 self.health -= other.attack_power
             if self.health <= 0:
                 self.health = 0
+        if group == 'player:shop':
+            self.shopping = True

@@ -21,6 +21,7 @@ class StageManager:
             game_world.add_object(self.player_ui, 2)
             game_world.add_collision_pair('player:enemy', self.player, None)
             game_world.add_collision_pair('player:item', self.player, None)
+            game_world.add_collision_pair('player:shop', self.player, None)
 
     def update(self):
         """죽은 적의 UI를 제거"""
