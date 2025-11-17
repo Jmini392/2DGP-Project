@@ -1,12 +1,10 @@
 from pico2d import *
 from player import *
-from enemy import *
-from shop import Shop
-from ui import PlayerUI, EnemyUI
 import game_world
 import framework
 import time
 from background_manager import BackgroundManager
+from stage_manager import StageManager
 
 player = None
 
@@ -15,36 +13,15 @@ COLLISION_COOLDOWN = 0.5
 LAST_COLLISION_TIME = 0.0
 
 def init():
-    global player, background_manager
-    # 객체들 생성
-    player = Player()
+    global player, background_manager, stage_manager
+
     background_manager = BackgroundManager()
-    enemy1 = Gorgon(600, 200, 0)
-    enemy2 = Gorgon(700, 300, 1)
-    enemy3 = Gorgon(300, 100, 2)
-    shop = Shop()
-    player_ui = PlayerUI(player)
+    game_world.add_object(background_manager, 0)
 
-    # 게임 월드에 객체들 추가
-    game_world.add_object(player, 1)
-    game_world.add_object(background_manager.background, 0)
-    game_world.add_object(enemy1, 1)
-    game_world.add_object(enemy2, 1)
-    game_world.add_object(enemy3, 1)
-    game_world.add_object(shop, 0)
-    game_world.add_object(player_ui, 2)
-
-    # 충돌 쌍 등록
-    game_world.add_collision_pair( 'player:enemy', player, None)
-    game_world.add_collision_pair( 'player:item', player, None)
-    game_world.add_collision_pair( 'player:enemy', None, enemy1)
-    game_world.add_collision_pair( 'player:enemy', None, enemy2)
-    game_world.add_collision_pair( 'player:enemy', None, enemy3)
-    game_world.add_collision_pair('attack:enemy', None, enemy1)
-    game_world.add_collision_pair('attack:enemy', None, enemy2)
-    game_world.add_collision_pair('attack:enemy', None, enemy3)
-    game_world.add_collision_pair('player:shop', player, shop)
-
+    stage_manager = StageManager()
+    stage_manager.init_player()
+    player = stage_manager.player
+    stage_manager.load_stage(0)
 
 def handle_events():
     event_list = get_events()
@@ -59,13 +36,19 @@ def handle_events():
 def update():
     global LAST_COLLISION_TIME
     game_world.update()
-    if background_manager:
-        old_background = background_manager.background
-        background_manager.check_stage_transition(player)
-        # 배경이 변경되었다면 game_world에서도 교체
+
+    old_stage = background_manager.current_stage
+    old_background = background_manager.background
+    # 플레이어 위치에 따라 스테이지 전환 체크
+    background_manager.check_stage_transition(player)
+    # 스테이지가 변경되었다면
+    if old_stage != background_manager.current_stage:
+        # 배경이 실제로 바뀐 경우에만 처리
         if old_background != background_manager.background:
-            game_world.remove_object(old_background)
+            # game_world.remove_object(old_background)
             game_world.add_object(background_manager.background, 0)
+        # 새로운 스테이지 객체 로드
+        stage_manager.load_stage(background_manager.current_stage)
 
     now = time.time()
     if now - LAST_COLLISION_TIME >= COLLISION_COOLDOWN:
