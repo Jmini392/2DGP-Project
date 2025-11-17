@@ -36,6 +36,7 @@ def handle_events():
 def update():
     global LAST_COLLISION_TIME
     game_world.update()
+    stage_manager.update()
 
     old_stage = background_manager.current_stage
     old_background = background_manager.background

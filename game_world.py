@@ -68,3 +68,9 @@ def remove_collision_object(o):
             pairs[0].remove(o)
         if o in pairs[1]:
             pairs[1].remove(o)
+
+def find_object(o):
+    for layer in world:
+        if o in layer:
+            return True
+    return False
