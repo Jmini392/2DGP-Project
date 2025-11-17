@@ -5,6 +5,7 @@ import framework
 import time
 from background_manager import BackgroundManager
 from stage_manager import StageManager
+import shop_mode
 
 player = None
 
@@ -30,6 +31,10 @@ def handle_events():
             framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             framework.quit()
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_v:
+            if player.shopping:
+                framework.push_mode(shop_mode)
+                pass
         else:
             player.handle_event(event)
 
