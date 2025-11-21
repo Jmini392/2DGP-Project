@@ -50,16 +50,37 @@ RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 
+
 class Attack:
     def __init__(self, player):
         self.player = player
         self.attacking = None
+        self.punch = 0
+        self.kick = 0
+        self.last_attack_time = 0
+        self.combo = 1.0
 
     def enter(self, e):
+        current_time = time.time()
+
+        # 콤보 시간이 지났으면 리셋
+        if current_time - self.last_attack_time > self.combo:
+            self.punch = 0
+            self.kick = 0
+
         if x_down(e):
-            self.player.special_attack_time = time.time() + 5.0
-            self.player.special_attack = True
+            self.player.kick = True
+            self.punch = 0
+            if self.kick > 2:
+                self.kick = 0
+        else:
+            self.kick = 0
+            if self.punch > 2:
+                self.punch = 0
+
+        self.last_attack_time = current_time
         self.player.frame = 0
+
         if self.player.is_strong_boosted():
             self.attacking = attack.Attack(self.player, 50)
         else:
@@ -68,31 +89,50 @@ class Attack:
         game_world.add_collision_pair('attack:enemy', self.attacking, None)
 
     def exit(self, e):
-        self.player.special_attack = False
+        if self.player.kick:
+            self.kick += 1
+        else:
+            self.punch += 1
+
+        self.player.kick = False
         if self.attacking:
             game_world.remove_object(self.attacking)
 
     def do(self):
-        if self.player.special_attack:
-            self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 6
-            if self.player.frame > 5:
+        if self.punch == 1:
+            frame = 8
+        elif self.kick == 2:
+            frame = 7
+        else:
+            frame = 6
+        if self.player.kick:
+            self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % frame
+            if self.player.frame > frame - 1:
                 self.player.state.handle_event(('IDLE_ENTER', None))
         else:
-            self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 5
-            if self.player.frame > 4:
+            self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % frame
+            if self.punch == 2:
+                self.player.x += self.player.face_dir
+            if self.player.frame > frame - 1:
                 self.player.state.handle_event(('IDLE_ENTER', None))
 
     def draw(self):
-        if self.player.face_dir == 1:
-            if self.player.special_attack:
-                self.player.special_attack_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
+        if self.player.kick:
+            if self.player.face_dir == 1:
+                self.player.kick_image[self.kick].clip_draw(int(self.player.frame) * 262, 0, 262, 162, self.player.x, self.player.y)
             else:
-                self.player.attack_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
+                self.player.kick_image[self.kick].clip_composite_draw(int(self.player.frame) * 262, 0, 262, 162, 0, 'h', self.player.x, self.player.y, 262, 162)
         else:
-            if self.player.special_attack:
-                self.player.special_attack_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
+            if self.player.face_dir == 1:
+                if self.punch == 2:
+                    self.player.punch_image[self.punch].clip_draw(int(self.player.frame) * 262, 0, 262, 162, self.player.x, self.player.y)
+                else :
+                    self.player.punch_image[self.punch].clip_draw(int(self.player.frame) * 262, 0, 162, 162, self.player.x, self.player.y)
             else:
-                self.player.attack_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
+                if self.punch == 2:
+                    self.player.punch_image[self.punch].clip_composite_draw(int(self.player.frame) * 262, 0, 262, 162, 0, 'h', self.player.x, self.player.y, 262, 162)
+                else:
+                    self.player.punch_image[self.punch].clip_composite_draw(int(self.player.frame) * 262, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
 
 class Walk:
     def __init__(self, player):
@@ -100,19 +140,19 @@ class Walk:
         self.key_state = {'left': False, 'right': False, 'up': False, 'down': False}
 
     def enter(self, e):
+        # 공격 콤보 리셋
+        self.player.ATTACK.punch = 0
+        self.player.ATTACK.kick = 0
         if left_down(e):
             self.key_state['left'] = True
+            self.player.face_dir = -1
         elif right_down(e):
             self.key_state['right'] = True
+            self.player.face_dir = 1
         elif up_down(e):
             self.key_state['up'] = True
         elif down_down(e):
             self.key_state['down'] = True
-
-        if self.key_state['right']:
-            self.player.face_dir = 1
-        elif self.key_state['left']:
-            self.player.face_dir = -1
 
     def exit(self, e):
         if left_up(e):
@@ -134,8 +174,7 @@ class Walk:
             self.player.state.handle_event(('IDLE_ENTER', None))
             return
 
-        dx = 0
-        dy = 0
+        dx, dy = 0, 0
 
         if self.key_state['right']:
             dx += 1
@@ -174,14 +213,14 @@ class Walk:
     def draw(self):
         if self.player.face_dir == 1:
             if self.player.run:
-                self.player.run_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
+                self.player.run_image.clip_draw(int(self.player.frame) * 262, 0, 162, 162, self.player.x, self.player.y)
             else:
-                self.player.walk_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
+                self.player.walk_image.clip_draw(int(self.player.frame) * 262, 0, 162, 162, self.player.x, self.player.y)
         else:
             if self.player.run:
-                self.player.run_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
+                self.player.run_image.clip_composite_draw(int(self.player.frame) * 262, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
             else:
-                self.player.walk_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
+                self.player.walk_image.clip_composite_draw(int(self.player.frame) * 262, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
 
 class Idle:
     def __init__(self, player):
@@ -198,9 +237,9 @@ class Idle:
 
     def draw(self):
         if self.player.face_dir == 1:
-            self.player.idle_image.clip_draw(int(self.player.frame) * 162, 0, 162, 162, self.player.x, self.player.y)
+            self.player.idle_image.clip_draw(int(self.player.frame) * 262, 0, 162, 162, self.player.x, self.player.y)
         else:
-            self.player.idle_image.clip_composite_draw(int(self.player.frame) * 162, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
+            self.player.idle_image.clip_composite_draw(int(self.player.frame) * 262, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
 
 class Player:
     def __init__(self):
@@ -209,13 +248,12 @@ class Player:
         self.frame = 0
 
         self.run = False
-        self.special_attack = False
+        self.kick = False
 
-        self.health = 50
+        self.health = 100
         self.max_health = 100
 
         self.item = 'speed'
-        self.use = False
         self.inventory = {
             'speed': 3,
             'strong': 3,
@@ -225,15 +263,13 @@ class Player:
         self.speed_boost_end_time = 0
         self.strong_boost_end_time = 0
         self.item_cooldown = 0
-        self.special_attack_time = 0
         self.shopping = False
 
-        self.font = load_font('ENCR10B.TTF', 16)
         self.idle_image = load_image('sprite/idle.png')
         self.walk_image = load_image('sprite/Walk.png')
         self.run_image = load_image('sprite/Run.png')
-        self.attack_image = load_image('sprite/Attack_1.png')
-        self.special_attack_image = load_image('sprite/Attack_2.png')
+        self.punch_image = [load_image('sprite/punch_1.png'), load_image('sprite/punch_2.png'), load_image('sprite/punch_3.png')]
+        self.kick_image = [load_image('sprite/kick_1.png'), load_image('sprite/kick_2.png'), load_image('sprite/kick_3.png')]
 
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
@@ -250,9 +286,14 @@ class Player:
                     up_down: self.WALK, down_down: self.WALK,
                     left_up: self.WALK, right_up: self.WALK,
                     up_up: self.WALK, down_up: self.WALK,
+                    z_down : self.ATTACK, x_down : self.ATTACK,
                     idle_enter : self.IDLE
                 },
-                self.ATTACK : { idle_enter : self.IDLE }
+                self.ATTACK : {
+                    left_down: self.WALK, right_down: self.WALK,
+                    up_down: self.WALK, down_down: self.WALK,
+                    idle_enter: self.IDLE
+                }
             })
 
     def update(self):
@@ -260,7 +301,7 @@ class Player:
 
     def draw(self):
         self.state.draw()
-        draw_rectangle(*self.get_bb())\
+        draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         return self.x - 30, self.y - 70, self.x + 30, self.y + 70
@@ -285,8 +326,6 @@ class Player:
 
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN:
-            if event.key == SDLK_x and time.time() < self.special_attack_time:
-                return
             if event.key == SDLK_LCTRL:
                 self.run = True
             if event.key == SDLK_1:
