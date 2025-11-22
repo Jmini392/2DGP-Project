@@ -255,10 +255,10 @@ class Player:
 
         self.item = 'speed'
         self.inventory = {
-            'speed': 3,
-            'strong': 3,
-            'health': 3,
-            'money': 0
+            'speed': 0,
+            'strong': 0,
+            'health': 0,
+            'money': 100
         }
         self.speed_boost_end_time = 0
         self.strong_boost_end_time = 0
@@ -320,7 +320,8 @@ class Player:
         return time.time() < self.strong_boost_end_time
 
     def handle_event(self, event):
-        self.player.shopping = False
+        if self.shopping:
+            self.shopping = False
         if event.type == SDL_KEYDOWN:
             if event.key == SDLK_LCTRL:
                 self.run = True

@@ -33,6 +33,7 @@ def handle_events():
             framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_v:
             if player.shopping:
+                shop_mode.get_player_data(player)
                 framework.push_mode(shop_mode)
         else:
             player.handle_event(event)

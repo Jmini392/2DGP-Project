@@ -36,7 +36,7 @@ class Shop:
 
 class Stand:
     def __init__(self):
-        self.merchant_img = load_image(f'sprite/merchant{merchant_index}.png')
+        self.merchant_img = load_image(f'sprite/merchant{merchant_index + 1}.png')
         self.image = load_image('sprite/stand.png')
         self.frame = 0
 
