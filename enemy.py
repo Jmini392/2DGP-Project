@@ -59,6 +59,7 @@ class Gorgon:
         return self.x - 30, self.y - 70, self.x + 40, self.y + 30
 
     def update(self):
+        self.walk = True
         if self.die:
             div_num = 3
         else:
@@ -66,6 +67,9 @@ class Gorgon:
         self.frame = (self.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % div_num
 
     def handle_collision(self, group, other):
+        if group == 'player:enemy':
+            self.walk = False
+            self.attack = True
         if group == 'attack:enemy':
             # 적 체력 감소
             self.health -= other.damage

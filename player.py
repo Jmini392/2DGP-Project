@@ -58,7 +58,7 @@ class Attack:
         self.punch = 0
         self.kick = 0
         self.last_attack_time = 0
-        self.combo = 1.0
+        self.combo = 1.5
 
     def enter(self, e):
         current_time = time.time()
@@ -286,14 +286,9 @@ class Player:
                     up_down: self.WALK, down_down: self.WALK,
                     left_up: self.WALK, right_up: self.WALK,
                     up_up: self.WALK, down_up: self.WALK,
-                    z_down : self.ATTACK, x_down : self.ATTACK,
                     idle_enter : self.IDLE
                 },
-                self.ATTACK : {
-                    left_down: self.WALK, right_down: self.WALK,
-                    up_down: self.WALK, down_down: self.WALK,
-                    idle_enter: self.IDLE
-                }
+                self.ATTACK : { idle_enter: self.IDLE }
             })
 
     def update(self):
@@ -325,6 +320,7 @@ class Player:
         return time.time() < self.strong_boost_end_time
 
     def handle_event(self, event):
+        self.player.shopping = False
         if event.type == SDL_KEYDOWN:
             if event.key == SDLK_LCTRL:
                 self.run = True

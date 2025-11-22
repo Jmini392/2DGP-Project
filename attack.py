@@ -5,11 +5,13 @@ class Attack:
         self.player = player
         self.face_dir = player.face_dir
         self.x, self.y = player.x, player.y + 25
-        self.special_attack = player.kick
-        if self.special_attack:
-            self.damage = damage + 50
+        self.p_cnt = player.ATTACK.punch
+        self.k_cnt = player.ATTACK.kick
+        self.kick = player.kick
+        if self.kick:
+            self.damage = damage + 10 * (self.k_cnt + 1)
         else:
-            self.damage = damage
+            self.damage = damage + 5 ** (self.p_cnt + 1)
 
     def draw(self):
         draw_rectangle(*self.get_bb())
@@ -18,7 +20,7 @@ class Attack:
         self.x, self.y = self.player.x, self.player.y + 25
 
     def get_bb(self):
-        if self.special_attack:
+        if self.kick:
             if self.face_dir == 1:
                 return self.x + 30, self.y - 90, self.x + 100, self.y
             else:

@@ -45,17 +45,17 @@ class PlayerUI:
         draw_thick_rectangle(self.x, self.y, self.x + self.player.max_health * 4, self.y + 30, (255, 255, 0), 5)
         # 인벤토리 그리기
         self.item_image[0].clip_draw(0, 0, 568, 568, 125, 625, 50, 50)
-        self.font.draw(140, 640, f'{self.player.inventory.get('speed')}', (0, 255, 0))
+        self.font.draw(100, 640, f'{self.player.inventory.get('speed')}', (0, 0, 0))
         self.item_image[1].clip_draw(0, 0, 568, 568, 175, 625, 50, 50)
-        self.font.draw(190, 640, f'{self.player.inventory.get('strong')}', (0, 255, 0))
+        self.font.draw(150, 640, f'{self.player.inventory.get('strong')}', (0, 0, 0))
         self.item_image[2].clip_draw(0, 0, 568, 568, 225, 625, 50, 50)
-        self.font.draw(240, 640, f'{self.player.inventory.get('health')}', (0, 255, 0))
+        self.font.draw(200, 640, f'{self.player.inventory.get('health')}', (0, 0, 0))
         if self.player.item is 'speed':
-            draw_thick_rectangle(100, 600, 150, 650, (0, 255, 0))
+            draw_thick_rectangle(100, 600, 150, 650, (0, 0, 0))
         elif self.player.item is 'strong':
-            draw_thick_rectangle(150, 600, 200, 650, (0, 255, 0))
+            draw_thick_rectangle(150, 600, 200, 650, (0, 0, 0))
         elif self.player.item is 'health':
-            draw_thick_rectangle(200, 600, 250, 650, (0, 255, 0))
+            draw_thick_rectangle(200, 600, 250, 650, (0, 0, 0))
 
     def update(self):
         pass

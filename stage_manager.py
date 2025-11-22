@@ -44,7 +44,7 @@ class StageManager:
 
         # 일반 몬스터 스테이지
         if self.current_stage == 0 or self.current_stage == 1:
-            self.load_stage_0()
+            # self.load_stage_0()
             pass
         # 상점 스테이지
         elif self.current_stage == 2 or self.current_stage == 6 or self.current_stage == 9:
@@ -65,8 +65,8 @@ class StageManager:
             self.load_final_stage()
 
     def load_stage_0(self):
-        enemy1 = Wizard(600, 200, 0)
-        enemy1ui = EnemyUI(enemy1, 3, 0)
+        enemy1 = Gorgon(600, 200, 0)
+        enemy1ui = EnemyUI(enemy1, 0, 0)
         game_world.add_object(enemy1ui, 2)
         self.enemy_uis[enemy1] = enemy1ui
 
