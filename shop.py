@@ -1,6 +1,7 @@
 from pico2d import *
 import framework
 import random
+import share
 
 #merchant frame
 TIME_PER_ACTION = 1.0
@@ -39,10 +40,36 @@ class Stand:
         self.merchant_img = load_image(f'sprite/merchant{merchant_index + 1}.png')
         self.image = load_image('sprite/stand.png')
         self.frame = 0
+        self.font = load_font('Galmuri14.TTF', 50)
 
     def draw(self):
         self.merchant_img.clip_draw(int(self.frame) * 64, 0, 64, 64, 990, 400, 600, 600)
         self.image.clip_draw(0, 0, 166, 184, 720, 350, 1494, 1656)
+        self.font.draw(220, 250, '100G', (255, 255, 0))
+        self.font.draw(440, 250, '150G', (255, 255, 0))
+        self.font.draw(660, 250, '200G', (255, 255, 0))
+        self.font.draw(180, 150, f'{share.player.inventory.get('speed')}개', (0, 0, 0))
+        self.font.draw(400, 150, f'{share.player.inventory.get('strong')}개', (0, 0, 0))
+        self.font.draw(620, 150, f'{share.player.inventory.get('health')}개', (0, 0, 0))
+        self.font.draw(800, 150, f'소지금: {share.player.inventory.get('money')}G', (255, 255, 0))
+
+    def shop_item_click(self, x = None, y = None):
+        # 상점 아이템 클릭 처리 로직 구현
+        if 133 <= x <= 254 and 350 <= y <= 480:
+            # 속도 아이템 구매
+            if share.player.inventory['money'] >= 100:
+                share.player.inventory['money'] -= 100
+                share.player.inventory['speed'] += 1
+        elif 357 <= x <= 484 and 350 <= y <= 480:
+            # 공격력 아이템 구매
+            if share.player.inventory['money'] >= 150:
+                share.player.inventory['money'] -= 150
+                share.player.inventory['strong'] += 1
+        elif 582 <= x <= 715 and 350 <= y <= 480:
+            # 체력 아이템 구매
+            if share.player.inventory['money'] >= 200:
+                share.player.inventory['money'] -= 200
+                share.player.inventory['health'] += 1
 
     def update(self):
         self.frame = (self.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 8
