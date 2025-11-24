@@ -73,7 +73,7 @@ class EnemyUI:
         elif self.type == 2:
             self.image = load_image('sprite/Gorgon_portrait3.png')
         elif self.type == 3:
-            self.image = load_image('sprite/Wizard_portrait1.png')
+            self.image = load_image('sprite/Wizard_portrait.png')
 
     def draw(self):
         # 플레이어 초상화 및 체력바 그리기
