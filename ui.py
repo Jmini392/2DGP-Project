@@ -1,7 +1,4 @@
 from pico2d import *
-from player import *
-from enemy import *
-from item import *
 
 def draw_thick_rectangle(x1, y1, x2, y2, color=(255, 255, 0), thickness=3):
     # 네 꼭짓점 정의
@@ -50,11 +47,11 @@ class PlayerUI:
         self.font.draw(150, 640, f'{self.player.inventory.get('strong')}', (0, 0, 0))
         self.item_image[2].clip_draw(0, 0, 568, 568, 225, 625, 50, 50)
         self.font.draw(200, 640, f'{self.player.inventory.get('health')}', (0, 0, 0))
-        if self.player.item is 'speed':
+        if self.player.item == 'speed':
             draw_thick_rectangle(100, 600, 150, 650, (0, 0, 0))
-        elif self.player.item is 'strong':
+        elif self.player.item == 'strong':
             draw_thick_rectangle(150, 600, 200, 650, (0, 0, 0))
-        elif self.player.item is 'health':
+        elif self.player.item == 'health':
             draw_thick_rectangle(200, 600, 250, 650, (0, 0, 0))
 
     def update(self):

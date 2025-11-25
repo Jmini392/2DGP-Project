@@ -20,6 +20,7 @@ def handle_events():
         if event.type == SDL_KEYDOWN and event.key == SDLK_v:
             framework.pop_mode()
             share.player.shopping = False
+            game_world.add_object(share.player.ui,2)
         elif event.type == SDL_MOUSEBUTTONDOWN and event.button == 1:
             stand.shop_item_click(event.x, event.y)
 

@@ -1,8 +1,8 @@
 from pico2d import *
-from player import *
 import game_world
 import framework
 import time
+from player import Player
 from background_manager import BackgroundManager
 from stage_manager import StageManager
 import shop_mode
@@ -13,14 +13,17 @@ COLLISION_COOLDOWN = 0.5
 LAST_COLLISION_TIME = 0.0
 
 def init():
-    global background_manager, stage_manager
+    if share.player is None:
+        share.player = Player()
+        game_world.add_object(share.player, 1)
+        game_world.add_collision_pair('player:enemy', share.player, None)
+        game_world.add_collision_pair('player:item', share.player, None)
+        game_world.add_collision_pair('player:shop', share.player, None)
 
+    global background_manager, stage_manager
     background_manager = BackgroundManager()
     game_world.add_object(background_manager, 0)
-
     stage_manager = StageManager()
-    stage_manager.init_player()
-    share.player = stage_manager.player
     stage_manager.load_stage(0)
 
 def handle_events():
@@ -32,6 +35,7 @@ def handle_events():
             framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_v:
             if share.player.shopping:
+                game_world.remove_object(share.player.ui)
                 framework.push_mode(shop_mode)
         else:
             share.player.handle_event(event)

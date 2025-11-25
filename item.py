@@ -6,7 +6,6 @@ potion_image = ['sprite/potion1.png', 'sprite/potion2.png', 'sprite/potion3.png'
 class Item:
     image = None
     def __init__(self, x = 400, y = 200, type = 0):
-        pass
         self.x, self.y = x, y
         self.type = type
         self.list = {
@@ -18,8 +17,6 @@ class Item:
             self.image = load_image(potion_image[self.type])
 
     def draw(self):
-        pass
-        # 아이템 그리기
         self.image.clip_draw(0, 0, 568, 568, self.x, self.y, 50, 50)
         draw_rectangle(*self.get_bb())
 

@@ -1,11 +1,11 @@
 from pico2d import *
 from sdl2 import *
-
 import framework
 import game_world
 from state_machine import StateMachine
 import time
 import attack
+from ui import PlayerUI
 
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
@@ -260,6 +260,8 @@ class Player:
             'health': 0,
             'money': 100
         }
+        self.ui = PlayerUI(self)
+        game_world.add_object(self.ui, 2)
         self.speed_boost_end_time = 0
         self.strong_boost_end_time = 0
         self.item_cooldown = 0
@@ -351,7 +353,7 @@ class Player:
             self.inventory[other.list[other.type]] += 1
         if group == 'player:enemy':
             if self.health > 0:
-                self.health -= other.attack_power
+                self.health -= other.power
             if self.health <= 0:
                 self.health = 0
         if group == 'player:shop':
