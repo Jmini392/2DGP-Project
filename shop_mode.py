@@ -21,8 +21,12 @@ def handle_events():
             framework.pop_mode()
             share.player.shopping = False
             game_world.add_object(share.player.ui,2)
-        elif event.type == SDL_MOUSEBUTTONDOWN and event.button == 1:
-            stand.shop_item_click(event.x, event.y)
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_LEFT:
+            stand.arrow_move(-220)
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_RIGHT:
+            stand.arrow_move(220)
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_RETURN:
+            stand.buy_item()
 
 def draw():
     clear_canvas()

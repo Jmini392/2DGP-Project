@@ -9,7 +9,7 @@ class Background:
         self.image = load_image(background[self.stage])
 
     def draw(self):
-        self.image.clip_draw(0, 0, 1920, 1080, self.x, self.y, 1280, 720)
+        self.image.draw(self.x, self.y, 1280, 720)
 
     def update(self):
         pass
