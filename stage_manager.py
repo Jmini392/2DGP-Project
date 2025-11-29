@@ -18,7 +18,7 @@ class StageManager:
 
         # 일반 몬스터 스테이지
         if self.current_stage == 0 or self.current_stage == 1:
-            self.load_stage_3()
+            self.load_stage_0()
             pass
         # 상점 스테이지
         elif self.current_stage == 2 or self.current_stage == 6 or self.current_stage == 9:

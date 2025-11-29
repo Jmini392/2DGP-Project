@@ -353,7 +353,8 @@ class Player:
             self.inventory[other.list[other.type]] += 1
         if group == 'player:enemy':
             if self.health > 0:
-                self.health -= other.power
+                if other.state == 'attack':
+                    self.health -= other.power
             if self.health <= 0:
                 self.health = 0
         if group == 'player:shop':

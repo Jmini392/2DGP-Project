@@ -7,7 +7,7 @@ import share
 from behavior_tree import BehaviorTree, Action, Sequence, Condition, Selector
 from ui import EnemyUI
 
-animation_names = ['idle', 'attack', 'die']
+animation_names = ['idle', 'attack', 'die', 'hurt']
 
 #wizard fire speed
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
