@@ -1,6 +1,6 @@
 from pico2d import load_image
 
-background = ['sprite/Fieldground.png', 'sprite/Forestground.png', 'sprite/Battleground.png']
+background = ['sprite/Fieldground.png', 'sprite/Forestground.png', 'sprite/Battleground.png', 'sprite/Bossground.png']
 
 class Background:
     def __init__(self,stage = 0, x = 640, y = 360):
