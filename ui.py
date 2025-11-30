@@ -71,12 +71,14 @@ class EnemyUI:
             self.image = load_image('sprite/Gorgon_portrait3.png')
         elif self.type == 3:
             self.image = load_image('sprite/Wizard_portrait.png')
+        elif self.type == 4:
+            self.image = load_image('sprite/Boss_portrait.png')
 
     def draw(self):
         # 플레이어 초상화 및 체력바 그리기
-        self.image.clip_draw(0, 0, 32, 32, self.x, self.y - (self.num * 50), 40, 40)
+        self.image.draw(self.x, self.y - (self.num * 50), 40, 40)
         draw_thick_rectangle(self.x - 20, self.y + 20 - (self.num * 50), self.x + 20, self.y - 20- (self.num * 50), (255, 255, 0), 3)
-        draw_rectangle(self.x - 30, self.y - (self.num * 50), self.x - self.enemy.health * 2 - 30, self.y - 20 - (self.num * 50), 255, 255, 0, 0, True)
+        draw_rectangle(self.x - 30, self.y - (self.num * 50), self.x - (self.enemy.health) - 30, self.y - 20 - (self.num * 50), 255, 255, 0, 0, True)
 
     def update(self):
         pass

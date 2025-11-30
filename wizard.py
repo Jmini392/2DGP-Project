@@ -19,7 +19,6 @@ RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 #wizard frame
 TIME_PER_ACTION = 1.0
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
-FRAMES_PER_ACTION = 8
 
 class Wizard:
     image = None
@@ -34,6 +33,7 @@ class Wizard:
         self.tx, self.ty = 0, 0
         self.load_images()
         self.frame = 0
+        self.action = 7
         self.state = 'idle'
         self.health = 50
         self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
@@ -61,6 +61,10 @@ class Wizard:
             div_num = 6
             if int(self.frame) == 5 and self.state == 'die':
                 self.remove()
+        elif self.state == 'hurt':
+            div_num = 3
+            if int(self.frame) == 2:
+                self.state = 'idle'
         elif self.state == 'attack':
             div_num = 8
             if int(self.frame) == 7:
@@ -73,16 +77,15 @@ class Wizard:
                     self.state = 'idle'
         else:
             div_num = 7
-        self.frame = (self.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % div_num
+        self.frame = (self.frame + ACTION_PER_TIME * self.action * framework.frame_time) % div_num
         self.bt.run()
         if self.fireBall_cooldown > 0.0:
             self.fireBall_cooldown -= framework.frame_time
 
     def handle_collision(self, group, other):
         if group == 'attack:enemy':
-            # 적 체력 감소
             self.health -= other.damage
-            self.is_attacked = True
+            self.state = 'hurt'
             if self.health <= 0:
                 self.health = 0
                 self.state = 'die'
@@ -144,14 +147,16 @@ class Wizard:
         a2 = Action('Attack',self.attack_player)
         c2 = Condition('Attack cooldown', self.if_attack_cooldown)
         attack = Sequence('Attack', a1, c2, a2)
+
         a3 = Action('Random',self.get_random_location)
         a4 = Action('Move to target location',self.teleport)
         move = Sequence('Move', a3, a4)
+
         c3 = Condition('Player near', self.if_attacked)
         run = Sequence('Run from player', c3, move)
-        attack_or_move = Selector('Attack_or_move', run, attack)
-        wizard = Sequence('Wizard', c1, attack_or_move)
-        root = wizard
+        s = Selector('Attack_or_move', run, attack)
+
+        root = Sequence('Wizard', c1, s)
         self.bt = BehaviorTree(root)
 
 class FireBall:
@@ -160,7 +165,8 @@ class FireBall:
         self.x, self.y = x, y - 30
         self.dir = dir
         self.frame = 0
-        self.power = 20
+        self.power = 15
+        self.state = 'attack'
         if FireBall.image is None:
             FireBall.image = load_image('sprite/wizard_effect.png')
 
@@ -178,7 +184,7 @@ class FireBall:
             return self.x, self.y - 20, self.x + 50, self.y + 20
 
     def update(self):
-        self.frame = (self.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 4
+        self.frame = (self.frame + ACTION_PER_TIME * 4 * framework.frame_time) % 4
         distance = RUN_SPEED_PPS * framework.frame_time
         self.x += distance * math.cos(self.dir)
         self.y += distance * math.sin(self.dir)

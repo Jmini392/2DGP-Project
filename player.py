@@ -9,31 +9,22 @@ from ui import PlayerUI
 
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
-
 def right_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_RIGHT
-
 def left_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_LEFT
-
 def left_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_LEFT
-
 def up_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_UP
-
 def up_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_UP
-
 def down_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_DOWN
-
 def down_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_DOWN
-
 def z_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_z
-
 def x_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_x
 
@@ -49,7 +40,6 @@ RUN_SPEED_KMPH = 30.0 # Km / Hour
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
-
 
 class Attack:
     def __init__(self, player):
@@ -201,14 +191,14 @@ class Walk:
             self.player.x += dx * speed
             self.player.y += dy * speed
 
-        if self.player.x < 64:
-            self.player.x = 64
-        elif self.player.x > 1280 - 64:
-            self.player.x = 1280 - 64
-        if self.player.y < 64:
-            self.player.y = 64
-        elif self.player.y > 450 - 64:
-            self.player.y = 450 - 64
+        if self.player.x < 30:
+            self.player.x = 30
+        elif self.player.x > 1280 - 35:
+            self.player.x = 1280 - 35
+        if self.player.y < 70:
+            self.player.y = 70
+        elif self.player.y > 450 - 70:
+            self.player.y = 450 - 70
 
     def draw(self):
         if self.player.face_dir == 1:
