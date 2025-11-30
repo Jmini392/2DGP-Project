@@ -65,6 +65,7 @@ class Wizard:
             div_num = 3
             if int(self.frame) == 2:
                 self.state = 'idle'
+                self.is_attacked = True
         elif self.state == 'attack':
             div_num = 8
             if int(self.frame) == 7:
@@ -83,13 +84,16 @@ class Wizard:
             self.fireBall_cooldown -= framework.frame_time
 
     def handle_collision(self, group, other):
-        if group == 'attack:enemy':
-            self.health -= other.damage
-            self.state = 'hurt'
-            if self.health <= 0:
-                self.health = 0
-                self.state = 'die'
+        if not self.state == 'die' and not self.state == 'hurt':
+            if group == 'attack:enemy':
+                self.action = 3
                 self.frame = 0
+                self.state = 'hurt'
+                self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
+                self.health -= other.damage
+                if self.health <= 0:
+                    self.health = 0
+                    self.state = 'die'
 
     def remove(self):
         game_world.remove_object(self)
@@ -100,19 +104,17 @@ class Wizard:
             game_world.add_object(dropped_item, 1)
             game_world.add_collision_pair('player:item', None, dropped_item)
 
-    def if_not_dead(self):
-        if self.health > 0:
-            return BehaviorTree.SUCCESS
-        else:
+    def if_hurt(self):
+        if self.state == 'hurt' or self.state == 'die':
             return BehaviorTree.FAIL
-
-    def find_player(self):
-        self.tx, self.ty = share.player.x, share.player.y
-        self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
-        return BehaviorTree.SUCCESS
+        else:
+            self.action = 7
+            return BehaviorTree.SUCCESS
 
     def attack_player(self):
         self.state = 'attack'
+        self.tx, self.ty = share.player.x, share.player.y
+        self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
         return BehaviorTree.SUCCESS
 
     def if_attack_cooldown(self):
@@ -131,29 +133,23 @@ class Wizard:
         else:
             return BehaviorTree.FAIL
 
-    def get_random_location(self):
+    def teleport(self):
         self.tx = random.randint(100, 1200)
         self.ty = random.randint(100, 500)
-        return BehaviorTree.SUCCESS
-
-    def teleport(self):
-        self.x , self.y = self.tx, self.ty
+        self.x, self.y = self.tx, self.ty
         self.is_attacked = False
         return BehaviorTree.SUCCESS
 
     def build_behavior_tree(self):
-        c1 = Condition('Not dead', self.if_not_dead)
-        a1 = Action('Find player', self.find_player)
-        a2 = Action('Attack',self.attack_player)
+        c1 = Condition('Not dead', self.if_hurt)
+
         c2 = Condition('Attack cooldown', self.if_attack_cooldown)
-        attack = Sequence('Attack', a1, c2, a2)
+        a1 = Action('Attack',self.attack_player)
+        attack = Sequence('Attack', c2, a1)
 
-        a3 = Action('Random',self.get_random_location)
-        a4 = Action('Move to target location',self.teleport)
-        move = Sequence('Move', a3, a4)
-
-        c3 = Condition('Player near', self.if_attacked)
-        run = Sequence('Run from player', c3, move)
+        c3 = Condition('Attacked', self.if_attacked)
+        a2 = Action('Move to target location', self.teleport)
+        run = Sequence('Run from player', c3, a2)
         s = Selector('Attack_or_move', run, attack)
 
         root = Sequence('Wizard', c1, s)
@@ -188,6 +184,8 @@ class FireBall:
         distance = RUN_SPEED_PPS * framework.frame_time
         self.x += distance * math.cos(self.dir)
         self.y += distance * math.sin(self.dir)
+        if self.x < 0 or self.x > 1280 or self.y < 0 or self.y > 720:(
+            game_world.remove_object(self))
 
     def handle_collision(self, group, other):
         if group == 'player:enemy':
