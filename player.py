@@ -2,6 +2,7 @@ from pico2d import *
 from sdl2 import *
 import framework
 import game_world
+import share
 from state_machine import StateMachine
 import time
 import attack
@@ -223,13 +224,30 @@ class Idle:
         pass
 
     def do(self):
-        self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 4
+        if self.player.die:
+            self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 5
+            if self.player.face_dir == 1:
+                self.player.x -= 0.5
+            else:
+                self.player.x += 0.5
+            if self.player.frame > 4:
+                self.player.frame = 4
+                game_world.remove_object(self.player)
+                game_world.remove_object(self.player.ui)
+        else:
+            self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 4
 
     def draw(self):
-        if self.player.face_dir == 1:
-            self.player.idle_image.clip_draw(int(self.player.frame) * 262, 0, 162, 162, self.player.x, self.player.y)
+        if self.player.die:
+            if self.player.face_dir == 1:
+                self.player.dead_image.clip_draw(int(self.player.frame) * 262, 0, 162, 162, self.player.x, self.player.y)
+            else:
+                self.player.dead_image.clip_composite_draw(int(self.player.frame) * 262, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
         else:
-            self.player.idle_image.clip_composite_draw(int(self.player.frame) * 262, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
+            if self.player.face_dir == 1:
+                self.player.idle_image.clip_draw(int(self.player.frame) * 262, 0, 162, 162, self.player.x, self.player.y)
+            else:
+                self.player.idle_image.clip_composite_draw(int(self.player.frame) * 262, 0, 162, 162, 0, 'h', self.player.x, self.player.y, 162, 162)
 
 class Player:
     def __init__(self):
@@ -242,6 +260,8 @@ class Player:
 
         self.health = 100
         self.max_health = 100
+        self.is_attacked = False
+        self.die = False
 
         self.item = 'speed'
         self.inventory = {
@@ -262,6 +282,7 @@ class Player:
         self.run_image = load_image('sprite/Run.png')
         self.punch_image = [load_image('sprite/punch_1.png'), load_image('sprite/punch_2.png'), load_image('sprite/punch_3.png')]
         self.kick_image = [load_image('sprite/kick_1.png'), load_image('sprite/kick_2.png'), load_image('sprite/kick_3.png')]
+        self.dead_image = load_image('sprite/Dead.png')
 
         self.IDLE = Idle(self)
         self.WALK = Walk(self)
@@ -342,10 +363,18 @@ class Player:
         if group == 'player:item':
             self.inventory[other.list[other.type]] += 1
         if group == 'player:enemy':
-            if self.health > 0:
-                if other.state == 'attack':
-                    self.health -= other.power
-            if self.health <= 0:
-                self.health = 0
+            if self.is_attacked == False or self.die == False:
+                if self.health > 0:
+                    if other.state == 'attack':
+                        self.health -= other.power
+                        self.is_attacked = True
+                if self.health <= 0:
+                    global FRAMES_PER_ACTION
+                    FRAMES_PER_ACTION = 3
+                    self.health = 0
+                    self.die = True
+                    self.frame = 0
+            if other.state == 'attack':
+                self.is_attacked = False
         if group == 'player:shop':
             self.shopping = True
