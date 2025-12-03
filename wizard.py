@@ -35,6 +35,7 @@ class Wizard:
         self.frame = 0
         self.action = 7
         self.state = 'idle'
+        self.power = 0
         self.health = 50
         self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
         self.ui = EnemyUI(self, 3, num)
@@ -94,6 +95,7 @@ class Wizard:
                 if self.health <= 0:
                     self.health = 0
                     self.state = 'die'
+                    share.player.inventory['money'] += 200
 
     def remove(self):
         game_world.remove_object(self)

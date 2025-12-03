@@ -19,20 +19,16 @@ class StageManager:
 
         # 일반 몬스터 스테이지
         if self.current_stage == 0 or self.current_stage == 1:
-            self.load_stage_3()
-            # self.load_final_stage()
-            pass
+            self.load_stage_0()
         # 상점 스테이지
         elif self.current_stage == 2 or self.current_stage == 6 or self.current_stage == 9:
             self.load_stage_shop()
         # 에픽 몬스터 스테이지
         elif self.current_stage == 3 or self.current_stage == 4:
             self.load_stage_1()
-            pass
         # 중간 보스 몬스터 스테이지
         elif self.current_stage == 5:
             self.load_stage_2()
-            pass
         # 엘리트 몬스터 스테이지
         elif self.current_stage == 7 or self.current_stage == 8:
             self.load_stage_3()
@@ -59,7 +55,7 @@ class StageManager:
             game_world.add_collision_pair('attack:enemy', None, enemy)
 
     def load_stage_2(self):
-        enemy = Gorgon(500, 250, 2, 0)
+        enemy = Gorgon(1000, 250, 2, 0)
         game_world.add_object(enemy, 1)
         game_world.add_collision_pair('player:enemy', None, enemy)
         game_world.add_collision_pair('attack:enemy', None, enemy)
@@ -70,6 +66,7 @@ class StageManager:
         self.enemies = [enemy1, enemy2]
         for enemy in self.enemies:
             game_world.add_object(enemy, 1)
+            game_world.add_collision_pair('player:enemy', None, enemy)
             game_world.add_collision_pair('attack:enemy', None, enemy)
 
     def load_stage_shop(self):

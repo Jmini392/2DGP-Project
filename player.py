@@ -260,7 +260,6 @@ class Player:
 
         self.health = 100
         self.max_health = 100
-        self.is_attacked = False
         self.die = False
 
         self.item = 'speed'
@@ -312,7 +311,10 @@ class Player:
         draw_rectangle(*self.get_bb())
 
     def get_bb(self):
-        return self.x - 30, self.y - 70, self.x + 30, self.y + 70
+        if self.face_dir == 1:
+            return self.x - 20, self.y - 70, self.x + 30, self.y + 70
+        else:
+            return self.x - 30, self.y - 70, self.x + 20, self.y + 70
 
     def use_item(self, item_type):
         current_time = time.time()
@@ -363,18 +365,16 @@ class Player:
         if group == 'player:item':
             self.inventory[other.list[other.type]] += 1
         if group == 'player:enemy':
-            if self.is_attacked == False or self.die == False:
+            if self.die == False:
                 if self.health > 0:
                     if other.state == 'attack':
                         self.health -= other.power
-                        self.is_attacked = True
+                        other.power = 0
                 if self.health <= 0:
                     global FRAMES_PER_ACTION
                     FRAMES_PER_ACTION = 3
                     self.health = 0
                     self.die = True
                     self.frame = 0
-            if other.state == 'attack':
-                self.is_attacked = False
         if group == 'player:shop':
             self.shopping = True

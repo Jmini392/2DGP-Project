@@ -47,6 +47,7 @@ class PlayerUI:
         self.font.draw(150, 640, f'{self.player.inventory.get('strong')}', (0, 0, 0))
         self.item_image[2].clip_draw(0, 0, 568, 568, 225, 625, 50, 50)
         self.font.draw(200, 640, f'{self.player.inventory.get('health')}', (0, 0, 0))
+        self.font.draw(300, 640, f'GOLD: {self.player.inventory.get('money')}', (0, 0, 0))
         if self.player.item == 'speed':
             draw_thick_rectangle(100, 600, 150, 650, (0, 0, 0))
         elif self.player.item == 'strong':

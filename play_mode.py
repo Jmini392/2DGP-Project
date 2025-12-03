@@ -9,7 +9,7 @@ import shop_mode
 import share
 
 # 충돌 쿨다운(초)
-COLLISION_COOLDOWN = 0.5
+COLLISION_COOLDOWN = 0.2
 LAST_COLLISION_TIME = 0.0
 
 def init():
