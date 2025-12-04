@@ -25,6 +25,9 @@ def init():
     game_world.add_object(background_manager, 0)
     stage_manager = StageManager()
     stage_manager.load_stage(0)
+    share.bgm = load_music('sound/1.mp3')
+    share.bgm.set_volume(50)
+    share.bgm.repeat_play()
 
 def handle_events():
     event_list = get_events()

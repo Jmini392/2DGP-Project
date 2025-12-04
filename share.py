@@ -1,1 +1,2 @@
 player = None
+bgm = None

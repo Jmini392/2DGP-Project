@@ -1,6 +1,7 @@
+from pico2d import load_music
+import share
 from background import Background
 import game_world
-import framework
 
 class BackgroundManager:
     def __init__(self):
@@ -27,9 +28,15 @@ class BackgroundManager:
             # 배경이 바뀌는 경우에만 새 배경 생성
             if self.current_stage == 3:
                 self.background = Background(1)
+                share.bgm = load_music('sound/2.mp3')
+                share.bgm.repeat_play()
             elif self.current_stage == 7:
                 self.background = Background(2)
+                share.bgm = load_music('sound/3.mp3')
+                share.bgm.repeat_play()
             elif self.current_stage == 10:
                 self.background = Background(3)
+                share.bgm = load_music('sound/4.mp3')
+                share.bgm.repeat_play()
             # 플레이어 위치 초기화
             player.x = 0

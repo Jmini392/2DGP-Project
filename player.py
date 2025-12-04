@@ -50,9 +50,12 @@ class Attack:
         self.kick = 0
         self.last_attack_time = 0
         self.combo = 1.5
+        self.audio = load_wav('sound/punch.wav')
+        self.audio.set_volume(30)
 
     def enter(self, e):
         current_time = time.time()
+        self.audio.play()
 
         # 콤보 시간이 지났으면 리셋
         if current_time - self.last_attack_time > self.combo:
