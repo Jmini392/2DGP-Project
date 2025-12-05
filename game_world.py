@@ -74,3 +74,8 @@ def find_object(o):
         if o in layer:
             return True
     return False
+
+def clear():
+    for layer in world:
+        layer.clear()
+    collision_pairs.clear()

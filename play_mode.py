@@ -5,12 +5,14 @@ import time
 from player import Player
 from background_manager import BackgroundManager
 from stage_manager import StageManager
+import title_mode
 import shop_mode
 import share
 
 # 충돌 쿨다운(초)
 COLLISION_COOLDOWN = 0.2
 LAST_COLLISION_TIME = 0.0
+y = 720
 
 def init():
     if share.player is None:
@@ -20,13 +22,16 @@ def init():
         game_world.add_collision_pair('player:item', share.player, None)
         game_world.add_collision_pair('player:shop', share.player, None)
 
-    global background_manager, stage_manager
+    global background_manager, stage_manager, game_over, font, blink_timer, show_text
     background_manager = BackgroundManager()
     game_world.add_object(background_manager, 0)
     stage_manager = StageManager()
     stage_manager.load_stage(0)
+    game_over = load_image('sprite/game_over.png')
+    font = load_font('Galmuri14.TTF', 50)
+    blink_timer = 0.0
+    show_text = True
     share.bgm = load_music('sound/1.mp3')
-    share.bgm.set_volume(50)
     share.bgm.repeat_play()
 
 def handle_events():
@@ -40,6 +45,11 @@ def handle_events():
             if share.player.shopping:
                 game_world.remove_object(share.player.ui)
                 framework.push_mode(shop_mode)
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
+            if share.player.over:
+                share.player = None
+                game_world.clear()
+                framework.change_mode(title_mode)
         else:
             share.player.handle_event(event)
 
@@ -61,6 +71,15 @@ def update():
         # 새로운 스테이지 객체 로드
         stage_manager.load_stage(background_manager.current_stage)
 
+    if share.player.over:
+        global y, blink_timer, show_text
+        if y > 450:
+            y -= 100 * framework.frame_time
+        blink_timer += framework.frame_time
+        if blink_timer >= 0.5:
+            blink_timer = 0.0
+            show_text = not show_text
+
     now = time.time()
     if now - LAST_COLLISION_TIME >= COLLISION_COOLDOWN:
         game_world.handle_collisions()
@@ -69,13 +88,18 @@ def update():
 def draw():
     clear_canvas()
     game_world.render()
+    if share.player.over:
+        global y
+        game_over.draw(640, y, 1280, 720)
+        if y <= 450 and show_text:
+            font.draw(250, 220, '스페이스바를 눌러 타이틀로 돌아가기', (255, 255, 0))
     update_canvas()
 
 def finish():
     pass
 
 def pause():
-    pass
+    share.bgm.pause()
 
 def resume():
-    pass
+    share.bgm.resume()

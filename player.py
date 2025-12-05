@@ -50,12 +50,9 @@ class Attack:
         self.kick = 0
         self.last_attack_time = 0
         self.combo = 1.5
-        self.audio = load_wav('sound/punch.wav')
-        self.audio.set_volume(30)
 
     def enter(self, e):
         current_time = time.time()
-        self.audio.play()
 
         # 콤보 시간이 지났으면 리셋
         if current_time - self.last_attack_time > self.combo:
@@ -106,7 +103,7 @@ class Attack:
         else:
             self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % frame
             if self.punch == 2:
-                self.player.x += self.player.face_dir
+                self.player.x += self.player.face_dir * 5 * PIXEL_PER_METER * framework.frame_time
             if self.player.frame > frame - 1:
                 self.player.state.handle_event(('IDLE_ENTER', None))
 
@@ -227,16 +224,21 @@ class Idle:
         pass
 
     def do(self):
+        global FRAMES_PER_ACTION
         if self.player.die:
             self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 5
             if self.player.face_dir == 1:
-                self.player.x -= 0.5
+                self.player.x -= 2 * PIXEL_PER_METER * framework.frame_time
             else:
-                self.player.x += 0.5
+                self.player.x += 2 * PIXEL_PER_METER * framework.frame_time
             if self.player.frame > 4:
-                self.player.frame = 4
                 game_world.remove_object(self.player)
                 game_world.remove_object(self.player.ui)
+                self.player.over = True
+                share.bgm = load_music('sound/game_over.mp3')
+                share.bgm.set_volume(50)
+                share.bgm.play()
+                FRAMES_PER_ACTION = 8
         else:
             self.player.frame = (self.player.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 4
 
@@ -264,6 +266,7 @@ class Player:
         self.health = 100
         self.max_health = 100
         self.die = False
+        self.over = False
 
         self.item = 'speed'
         self.inventory = {
@@ -338,8 +341,8 @@ class Player:
         return time.time() < self.strong_boost_end_time
 
     def handle_event(self, event):
-        if self.shopping:
-            self.shopping = False
+        if self.die:
+            return
         if event.type == SDL_KEYDOWN:
             if event.key == SDLK_LCTRL:
                 self.run = True
@@ -368,7 +371,7 @@ class Player:
         if group == 'player:item':
             self.inventory[other.list[other.type]] += 1
         if group == 'player:enemy':
-            if self.die == False:
+            if not self.die:
                 if self.health > 0:
                     if other.state == 'attack':
                         self.health -= other.power
@@ -378,6 +381,9 @@ class Player:
                     FRAMES_PER_ACTION = 3
                     self.health = 0
                     self.die = True
+                    share.bgm = load_music('sound/death.mp3')
+                    share.bgm.set_volume(50)
+                    share.bgm.play()
                     self.frame = 0
         if group == 'player:shop':
             self.shopping = True
