@@ -1,23 +1,30 @@
 from pico2d import *
+import share
 
 class Attack:
-    def __init__(self, player, damage = 10):
-        self.player = player
-        self.face_dir = player.face_dir
-        self.x, self.y = player.x, player.y + 25
-        self.p_cnt = player.ATTACK.punch
-        self.k_cnt = player.ATTACK.kick
-        self.kick = player.kick
-        if self.kick:
-            self.damage = damage + 10 * (self.k_cnt + 1)
+    def __init__(self):
+        self.face_dir = share.player.face_dir
+        self.x, self.y = share.player.x, share.player.y + 25
+        self.p_cnt = share.player.ATTACK.punch_cnt
+        self.k_cnt = share.player.ATTACK.kick_cnt
+        self.kick = share.player.ATTACK.kick
+        if share.player.is_strong_boosted():
+            damage = 30
         else:
-            self.damage = damage + 5 ** (self.p_cnt + 1)
+            damage = 10
+        if self.kick:
+            self.damage = damage * (self.k_cnt + 1) * 2
+        else:
+            self.damage = damage * (self.p_cnt + 1)
+        self.audio = load_wav('sound/attack.wav')
+        self.audio.set_volume(90)
+        self.audio.play()
 
     def draw(self):
         draw_rectangle(*self.get_bb())
 
     def update(self):
-        self.x, self.y = self.player.x, self.player.y + 25
+        self.x, self.y = share.player.x, share.player.y + 25
 
     def get_bb(self):
         if self.kick:
@@ -32,4 +39,8 @@ class Attack:
                 return self.x - 80, self.y - 30, self.x - 30, self.y + 10
 
     def handle_collision(self, group, other):
-        pass
+        if group == 'attack:enemy':
+            if not other.state == 'hurt':
+                self.audio = load_wav('sound/hit.wav')
+                self.audio.set_volume(100)
+                self.audio.play()
