@@ -45,14 +45,13 @@ class Gorgon:
             self.attack_range = 0.68
         else:
             self.attack_range = 4.5
-
+        self.sound = load_wav('sound/gorgon_attack.wav')
+        self.sound.set_volume(50)
         self.check_time = 0.0
         self.find = False
-
         self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
         self.ui = EnemyUI(self, self.type - 1, num)
         game_world.add_object(self.ui, 2)
-
         self.build_behavior_tree()
 
     def draw(self):
@@ -128,9 +127,9 @@ class Gorgon:
                 div_num = 9
                 if int (self.frame) > 3:
                     if math.cos(self.dir) < 0:
-                        self.x -= 6
+                        self.x -= 20 * PIXEL_PER_METER * framework.frame_time
                     else:
-                        self.x += 6
+                        self.x += 20 * PIXEL_PER_METER * framework.frame_time
                 if int(self.frame) == 8:
                     self.state = 'idle'
                     self.power = 0
@@ -168,6 +167,9 @@ class Gorgon:
                 if self.health <= 0:
                     self.health = 0
                     self.state = 'die'
+                    self.sound = load_wav('sound/gorgon_death.wav')
+                    self.sound.set_volume(50)
+                    self.sound.play()
                     share.player.inventory['money'] += 100 * self.type
 
     def distance_less_than(self, x1, y1, x2, y2, r):
@@ -231,6 +233,7 @@ class Gorgon:
 
     def do_attack(self):
         self.state = 'attack'
+        self.sound.play()
         self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
         self.power = 10 + self.type * 5
         self.check_time = 3.0

@@ -37,6 +37,8 @@ class Wizard:
         self.state = 'idle'
         self.power = 0
         self.health = 50
+        self.sound = load_wav('sound/wizard_attack.wav')
+        self.sound.set_volume(50)
         self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
         self.ui = EnemyUI(self, 3, num)
         game_world.add_object(self.ui, 2)
@@ -75,6 +77,7 @@ class Wizard:
                     game_world.add_object(fire_ball, 1)
                     game_world.add_collision_pair('player:enemy', None, fire_ball)
                     game_world.add_collision_pair('attack:enemy', None, fire_ball)
+                    self.sound.play()
                     self.fireBall_cooldown = 2.0
                     self.state = 'idle'
         else:
@@ -96,6 +99,9 @@ class Wizard:
                     self.health = 0
                     self.state = 'die'
                     share.player.inventory['money'] += 200
+                    self.sound = load_wav('sound/wizard_death.wav')
+                    self.sound.set_volume(100)
+                    self.sound.play()
 
     def remove(self):
         game_world.remove_object(self)
@@ -163,7 +169,7 @@ class FireBall:
         self.x, self.y = x, y - 30
         self.dir = dir
         self.frame = 0
-        self.power = 15
+        self.power = 10
         self.state = 'attack'
         if FireBall.image is None:
             FireBall.image = load_image('sprite/wizard_effect.png')
