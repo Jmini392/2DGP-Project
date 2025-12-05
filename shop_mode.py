@@ -10,22 +10,26 @@ def init():
     global stand
     stand = Stand()
     game_world.add_object(stand, 2)
+    share.bgm = load_music('sound/shop.mp3')
+    share.bgm.repeat_play()
 
 def finish():
     game_world.remove_object(stand)
+    share.player.shopping = False
+    game_world.add_object(share.player.ui, 2)
+    share.bgm = load_music('sound/1.mp3')
+    share.bgm.repeat_play()
 
 def handle_events():
     events = get_events()
     for event in events:
         if event.type == SDL_KEYDOWN and event.key == SDLK_v:
             framework.pop_mode()
-            share.player.shopping = False
-            game_world.add_object(share.player.ui,2)
         elif event.type == SDL_KEYDOWN and event.key == SDLK_LEFT:
             stand.arrow_move(-220)
         elif event.type == SDL_KEYDOWN and event.key == SDLK_RIGHT:
             stand.arrow_move(220)
-        elif event.type == SDL_KEYDOWN and event.key == SDLK_RETURN:
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
             stand.buy_item()
 
 def draw():

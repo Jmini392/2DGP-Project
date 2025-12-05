@@ -99,7 +99,7 @@ def finish():
     pass
 
 def pause():
-    share.bgm.pause()
+    pass
 
 def resume():
-    share.bgm.resume()
+    pass

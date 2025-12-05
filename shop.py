@@ -43,6 +43,8 @@ class Stand:
         self.frame = 0
         self.font = load_font('Galmuri14.TTF', 50)
         self.x = 220
+        self.arrow_draw = False
+        self.timer = 0.0
 
     def draw(self):
         self.merchant_img.clip_draw(int(self.frame) * 64, 0, 64, 64, 990, 400, 600, 600)
@@ -54,7 +56,8 @@ class Stand:
         self.font.draw(400, 150, f'{share.player.inventory.get('strong')}개', (0, 0, 0))
         self.font.draw(620, 150, f'{share.player.inventory.get('health')}개', (0, 0, 0))
         self.font.draw(800, 150, f'소지금: {share.player.inventory.get('money')}G', (255, 255, 0))
-        self.arrow.rotate_draw(math.radians(270), self.x, 500, 70, 70)
+        if self.arrow_draw:
+            self.arrow.rotate_draw(math.radians(270), self.x, 500, 70, 70)
 
     def arrow_move(self, x = 0):
         if x == 220:
@@ -84,3 +87,7 @@ class Stand:
 
     def update(self):
         self.frame = (self.frame + ACTION_PER_TIME * FRAMES_PER_ACTION * framework.frame_time) % 8
+        self.timer += framework.frame_time
+        if self.timer >= 0.3:
+            self.timer = 0.0
+            self.arrow_draw = not self.arrow_draw

@@ -1,12 +1,18 @@
 from pico2d import *
 import framework
 import play_mode
+import share
 
 def init():
-    global image, arrow, y
+    global image, arrow, y, blink_timer, show_arrow
     image = load_image('sprite/title.png')
     arrow = load_image('sprite/arrow.png')
     y = 375
+    blink_timer = 0.0
+    show_arrow = True
+    share.bgm = load_music('sound/title.mp3')
+    share.bgm.set_volume(50)
+    share.bgm.repeat_play()
 
 def finish():
     global image, arrow
@@ -27,7 +33,7 @@ def handle_events():
                 y = 275
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             y = 275
-        elif event.type == SDL_KEYDOWN and event.key == SDLK_RETURN:
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
             if y == 375:
                 framework.change_mode(play_mode)
             elif y == 275:
@@ -36,11 +42,16 @@ def handle_events():
 def draw():
     clear_canvas()
     image.draw(640, 360, 1280, 720)
-    arrow.draw(720, y, 70 ,60)
+    if show_arrow:
+        arrow.draw(720, y, 70, 60)
     update_canvas()
 
 def update():
-    pass
+    global blink_timer, show_arrow
+    blink_timer += framework.frame_time
+    if blink_timer >= 0.3:
+        blink_timer = 0.0
+        show_arrow = not show_arrow
 
 def pause():
     pass
