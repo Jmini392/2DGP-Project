@@ -51,7 +51,6 @@ class Wizard:
             Wizard.image[self.state].clip_composite_draw(int(self.frame) * 128, 0, 128, 128, 0, 'h', self.x, self.y, 200, 200)
         else:
             Wizard.image[self.state].clip_draw(int(self.frame) * 128, 0, 128, 128, self.x, self.y, 200, 200)
-        draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         if math.cos(self.dir) < 0:
@@ -179,7 +178,6 @@ class FireBall:
             FireBall.image.clip_composite_draw(int(self.frame) * 64, 0, 64, 64, 0, 'h', self.x, self.y, 100, 100)
         else:
             FireBall.image.clip_draw(int(self.frame) * 64, 0, 64, 64, self.x, self.y, 100, 100)
-        draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         if math.cos(self.dir) < 0:

@@ -18,7 +18,6 @@ class Item:
 
     def draw(self):
         self.image.clip_draw(0, 0, 568, 568, self.x, self.y, 50, 50)
-        draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         return self.x - 30, self.y - 30, self.x + 30, self.y + 30

@@ -40,18 +40,12 @@ def handle_events():
     for event in event_list:
         if event.type == SDL_QUIT:
             framework.quit()
-        elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_v:
             if share.player.shopping:
                 game_world.remove_object(share.player.ui)
                 framework.push_mode(shop_mode)
         elif event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
-            if share.player.over:
-                share.player = None
-                game_world.clear()
-                framework.change_mode(title_mode)
-            elif share.player.win:
+            if share.player.over or share.player.win:
                 share.player = None
                 game_world.clear()
                 framework.change_mode(title_mode)

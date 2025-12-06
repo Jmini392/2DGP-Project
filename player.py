@@ -51,8 +51,11 @@ class Attack:
         self.kick_cnt = 0
         self.last_attack_time = 0
         self.combo = 1.5
+        self.audio = load_wav('sound/attack.wav')
+        self.audio.set_volume(90)
 
     def enter(self, e):
+        self.audio.play()
         current_time = time.time()
 
         # 콤보 시간이 지났으면 리셋
@@ -305,7 +308,6 @@ class Player:
 
     def draw(self):
         self.state.draw()
-        draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         if self.face_dir == 1:

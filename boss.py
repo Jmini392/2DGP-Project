@@ -51,8 +51,6 @@ class Boss:
             Boss.image[self.state].clip_composite_draw(int(self.frame) * 254, 0, 254, 225, 0, 'h', self.x, self.y, 300, 300)
         else:  # 오른쪽 바라볼 때
             Boss.image[self.state].clip_draw(int(self.frame) * 254, 0, 254, 225, self.x, self.y, 300, 300)
-        draw_rectangle(*self.get_bb())
-        draw_circle(self.x, self.y, int(10 * PIXEL_PER_METER))
 
     def get_bb(self):
         if math.cos(self.dir) < 0:
@@ -270,7 +268,7 @@ class Sword:
         self.power = self.boss.power
 
     def draw(self):
-        draw_rectangle(*self.get_bb())
+        pass
 
     def update(self):
         self.x, self.y = self.boss.x, self.boss.y

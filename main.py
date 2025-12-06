@@ -1,5 +1,5 @@
 from pico2d import *
-import play_mode as play
+import logo_mode as play
 import framework
 
 open_canvas(1280, 720)

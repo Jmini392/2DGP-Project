@@ -10,9 +10,6 @@ def init():
     y = 375
     blink_timer = 0.0
     show_arrow = True
-    share.bgm = load_music('sound/title.mp3')
-    share.bgm.set_volume(50)
-    share.bgm.repeat_play()
 
 def finish():
     global image, arrow

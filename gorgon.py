@@ -61,9 +61,6 @@ class Gorgon:
         else: # 오른쪽 바라볼 때
             Gorgon.image[self.type - 1][self.state].clip_draw(int(self.frame) * 128, 0, 128, 128,
                                                             self.x, self.y, 128 + (self.type * 50), 128 + (self.type * 50))
-        draw_rectangle(*self.get_bb())
-        draw_circle(self.x, self.y, int(PIXEL_PER_METER * (7 + (3 * self.type))))
-        draw_circle(self.x, self.y, int(PIXEL_PER_METER * (self.attack_range + (1 * self.type))), 255,0,255)
 
     def get_bb(self):
         if self.type == 1:

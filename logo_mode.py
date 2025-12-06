@@ -1,12 +1,16 @@
 from pico2d import *
 import framework
 import title_mode
+import share
 
 def init():
     global image
     global logo_start_time
     image = load_image('sprite/tuk_credit.png')
     logo_start_time = get_time()
+    share.bgm = load_music('sound/title.mp3')
+    share.bgm.set_volume(50)
+    share.bgm.repeat_play()
 
 def finish():
     global image
