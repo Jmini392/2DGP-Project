@@ -231,7 +231,6 @@ class Idle:
                 game_world.remove_object(self.player.ui)
                 self.player.over = True
                 share.bgm = load_music('sound/game_over.mp3')
-                share.bgm.set_volume(50)
                 share.bgm.play()
                 FRAMES_PER_ACTION = 8
         else:
@@ -259,6 +258,7 @@ class Player:
         # self.kick = False
         self.die = False
         self.over = False
+        self.win = False
         self.shopping = False
         self.item = 'speed'
         self.inventory = {
@@ -369,7 +369,6 @@ class Player:
                     self.die = True
                     self.state.handle_event(('IDLE_ENTER', None))
                     share.bgm = load_music('sound/death.mp3')
-                    share.bgm.set_volume(50)
                     share.bgm.play()
                     self.frame = 0
         if group == 'player:shop':

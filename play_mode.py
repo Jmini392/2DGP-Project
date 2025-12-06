@@ -22,12 +22,13 @@ def init():
         game_world.add_collision_pair('player:item', share.player, None)
         game_world.add_collision_pair('player:shop', share.player, None)
 
-    global background_manager, stage_manager, game_over, font, blink_timer, show_text
+    global background_manager, stage_manager, game_over, font, blink_timer, show_text, ending
     background_manager = BackgroundManager()
     game_world.add_object(background_manager, 0)
     stage_manager = StageManager()
     stage_manager.load_stage(0)
     game_over = load_image('sprite/game_over.png')
+    ending = load_image('sprite/the_end.png')
     font = load_font('Galmuri14.TTF', 50)
     blink_timer = 0.0
     show_text = True
@@ -47,6 +48,10 @@ def handle_events():
                 framework.push_mode(shop_mode)
         elif event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
             if share.player.over:
+                share.player = None
+                game_world.clear()
+                framework.change_mode(title_mode)
+            elif share.player.win:
                 share.player = None
                 game_world.clear()
                 framework.change_mode(title_mode)
@@ -71,7 +76,7 @@ def update():
         # 새로운 스테이지 객체 로드
         stage_manager.load_stage(background_manager.current_stage)
 
-    if share.player.over:
+    if share.player.over or share.player.win:
         global y, blink_timer, show_text
         if y > 450:
             y -= 100 * framework.frame_time
@@ -88,9 +93,13 @@ def update():
 def draw():
     clear_canvas()
     game_world.render()
+    global y
     if share.player.over:
-        global y
         game_over.draw(640, y, 1280, 720)
+        if y <= 450 and show_text:
+            font.draw(250, 220, '스페이스바를 눌러 타이틀로 돌아가기', (255, 255, 0))
+    elif share.player.win:
+        ending.draw(640, y, 1280, 720)
         if y <= 450 and show_text:
             font.draw(250, 220, '스페이스바를 눌러 타이틀로 돌아가기', (255, 255, 0))
     update_canvas()
