@@ -4,7 +4,6 @@ import game_world
 import random
 import share
 from behavior_tree import BehaviorTree, Action, Sequence, Condition, Selector
-from game_world import remove_collision_object
 from ui import EnemyUI
 
 animation_names = ['walk', 'idle', 'die', 'hurt', 'attack1', 'attack2', 'attack3', 'attack4']
@@ -40,6 +39,8 @@ class Boss:
         self.stack = 0
         self.cool_time = 0.0
         self.sword = None
+        self.sound = load_wav('sound/boss_attack2.wav')
+        self.sound.set_volume(90)
         self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
         self.ui = EnemyUI(self, 4, 0)
         game_world.add_object(self.ui, 2)
@@ -64,24 +65,32 @@ class Boss:
             div_num = 5
             if int(self.frame) == 4 and self.state == 'hurt':
                 self.state = 'idle'
+                self.action = 8
             if int(self.frame) == 4 and self.state == 'die':
                 self.remove()
         elif self.state == 'walk' or self.state == 'attack2':
             div_num = 8
-            if int(self.frame) == 7 and self.state == 'attack2':
-                game_world.remove_object(self.sword)
-                self.sword = None
-                if self.stack >= 20:
-                    self.attack_num = 4
-                else:
-                    self.attack_num = 1
-                self.state = 'idle'
-                self.frame = 0
+            if self.state == 'attack2':
+                if int(self.frame) == 2:
+                    self.sound.play()
+                if int(self.frame) == 7:
+                    if self.sword is not None:
+                        game_world.remove_object(self.sword)
+                        self.sword = None
+                    if self.stack >= 20:
+                        self.attack_num = 4
+                    else:
+                        self.attack_num = 1
+                    self.state = 'idle'
+                    self.frame = 0
         elif self.state == 'attack1':
             div_num = 9
+            if int(self.frame) == 2:
+                self.sound.play()
             if int(self.frame) == 8:
-                game_world.remove_object(self.sword)
-                self.sword = None
+                if self.sword is not None:
+                    game_world.remove_object(self.sword)
+                    self.sword = None
                 if self.stack >= 20:
                     self.attack_num = 4
                 else:
@@ -90,25 +99,30 @@ class Boss:
                 self.frame = 0
         elif self.state == 'attack3':
             div_num = 10
+            if int(self.frame) == 3:
+                self.sound.play()
             if int(self.frame) > 5:
                 if math.cos(self.dir) < 0:
-                    self.x -= 4
+                    self.x -= 30 * PIXEL_PER_METER * framework.frame_time
                 else:
-                    self.x += 4
+                    self.x += 30 * PIXEL_PER_METER * framework.frame_time
             if int(self.frame) == 9:
-                game_world.remove_object(self.sword)
-                self.sword = None
-                self.state = 'idle'
+                if self.sword is not None:
+                    game_world.remove_object(self.sword)
+                    self.sword = None
                 self.attack_num = 1
+                self.state = 'idle'
                 self.frame = 0
         elif self.state == 'attack4':
             div_num = 30
+            if int(self.frame) in [2, 10, 17, 20]:
+                self.sound.play()
             if int(self.frame) == 29:
-                game_world.remove_object(self.sword)
-                self.sword = None
+                if self.sword is not None:
+                    game_world.remove_object(self.sword)
+                    self.sword = None
                 self.attack_num = 1
                 self.frame = 0
-                self.stack = 0
                 self.state = 'idle'
         self.frame = (self.frame + ACTION_PER_TIME * self.action * framework.frame_time) % div_num
         self.bt.run()
@@ -118,6 +132,9 @@ class Boss:
     def remove(self):
         game_world.remove_object(self)
         game_world.remove_object(self.ui)
+        share.player.win = True
+        share.bgm = load_music('sound/ending.mp3')
+        share.bgm.play()
 
     def handle_collision(self, group, other):
         if not self.state == 'die' and not self.state == 'hurt':
@@ -135,15 +152,10 @@ class Boss:
                     self.x -= 15
                 self.health -= other.damage
                 if self.health <= 0:
+                    self.sound = load_wav('sound/boss_death.wav')
+                    self.sound.play()
                     self.health = 0
                     self.state = 'die'
-
-    def if_hurt(self):
-        if self.state == 'die' or self.state == 'hurt':
-            return BehaviorTree.FAIL
-        else:
-            self.action = 8
-            return BehaviorTree.SUCCESS
 
     def distance_less_than(self, x1, y1, x2, y2, r):
         distance2 = (x1 - x2) ** 2 + (y1 - y2) ** 2
@@ -161,7 +173,7 @@ class Boss:
         else:
             return BehaviorTree.FAIL
 
-    def cooldown(self, r = 1):
+    def if_cooldown(self, r = 1):
         if self.distance_less_than(share.player.x, share.player.y, self.x, self.y, r):
             return BehaviorTree.FAIL
         elif self.cool_time <= 0.0:
@@ -169,59 +181,84 @@ class Boss:
         else:
             return BehaviorTree.FAIL
 
-    def dash_attack(self):
-        self.state = 'attack3'
+    def if_check_busy(self):
+        if self.state in ['die', 'hurt', 'attack1', 'attack2', 'attack3', 'attack4']:
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
+
+    def if_stack_full(self):
+        if self.stack >= 20:
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
+
+    def do_attack(self):
+        self.state = 'attack' + str(self.attack_num)
+        self.sound = load_wav('sound/boss_attack2.wav')
+        self.stack += 1
+        self.frame = 0
+        self.power = 30
         self.sword = Sword(self, self.power)
         game_world.add_object(self.sword, 1)
         game_world.add_collision_pair('player:enemy', None, self.sword)
+        return BehaviorTree.SUCCESS
+
+    def do_dash_attack(self):
+        self.state = 'attack3'
+        self.sound = load_wav('sound/boss_attack1.wav')
         self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
-        self.cool_time = 4.0
+        self.stack += 1
         self.frame = 0
         self.power = 40
-        self.stack += 1
+        self.cool_time = 4.0
+        self.sword = Sword(self, self.power)
+        game_world.add_object(self.sword, 1)
+        game_world.add_collision_pair('player:enemy', None, self.sword)
+        return BehaviorTree.SUCCESS
+
+    def do_ultimate_attack(self):
+        self.state = 'attack4'
+        self.sound = load_wav('sound/boss_attack2.wav')
+        self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
+        self.stack = 0
+        self.frame = 0
+        self.power = 60
+        self.sword = Sword(self, self.power)
+        game_world.add_object(self.sword, 1)
+        game_world.add_collision_pair('player:enemy', None, self.sword)
         return BehaviorTree.SUCCESS
 
     def move_to_player(self, r = 0.5):
         self.state = 'walk'
         if self.distance_less_than(share.player.x, share.player.y, self.x, self.y, r):
-            self.state = 'attack' + str(self.attack_num)
-            self.sword = Sword(self, self.power)
-            game_world.add_object(self.sword, 1)
-            game_world.add_collision_pair('player:enemy', None, self.sword)
-            if self.attack_num == 4:
-                self.stack = 0
-                self.frame = 0
-                self.power = 50
-            else:
-                self.stack += 1
-                self.frame = 0
-                self.power = 30
             return BehaviorTree.SUCCESS
         else:
             self.move_little_to(share.player.x, share.player.y + 40, 2)
             return BehaviorTree.RUNNING
 
-    def attacking(self):
-        if self.state == 'attack1' or self.state == 'attack2' or self.state == 'attack3' or self.state == 'attack4':
-            return BehaviorTree.FAIL
-        else:
-            return BehaviorTree.SUCCESS
-
     def build_behavior_tree(self):
-        c1 = Condition('Not move', self.if_hurt)
+        c_busy = Condition('동작 중인지 확인', self.if_check_busy)
 
-        c = Condition('cooltime', self.cooldown, 10)
-        a = Action('attack3', self.dash_attack)
-        seq = Sequence('Move to player seq', c, a)
+        c_stack_full = Condition('스택 확인', self.if_stack_full)
+        a_ultimate = Action('궁극기 발동', self.do_ultimate_attack)
+        seq_ultimate = Sequence('광폭화 패턴', c_stack_full, a_ultimate)
 
-        a1 = Action('Move to player', self.move_to_player, 2)
-        Move = Selector('Move to player', seq, a1)
+        c_dash_cond = Condition('대시 조건 확인', self.if_cooldown, 4)
+        a_dash = Action('대시 공격', self.do_dash_attack)
+        seq_dash = Sequence('대시 공격 시퀀스', c_dash_cond, a_dash)
 
-        c3 = Condition('Attack action', self.attacking)
+        c_near = Condition('근접 거리 확인', self.if_player_near, 2)
+        a_move = Action('플레이어 다가가기', self.move_to_player, 2)
+        a_attack = Action('근접 공격', self.do_attack)
+        seq_attack = Sequence('근접 공격 시퀀스', c_near, a_move, a_attack)
 
-        s = Sequence('Follow_and_attack', c3, Move)
+        a_chase = Action('플레이어 추격', self.move_to_player, 2)
 
-        root = Sequence("", c1, s)
+        sel_combat = Selector('전투 패턴 선택', seq_ultimate, seq_dash, seq_attack, a_chase)
+
+        root = Selector('보스 AI 루트', c_busy, sel_combat)
+
         self.bt = BehaviorTree(root)
 
 class Sword:
@@ -254,11 +291,13 @@ class Sword:
                 return self.x - 100, self.y - 80, self.x - 20, self.y + 40
             else:
                 return self.x + 20, self.y - 80, self.x + 100, self.y + 40
-        else:
+        elif self.boss.state == 'attack4':
             if math.cos(self.face_dir) < 0:
                 return self.x - 120, self.y - 100, self.x - 20, self.y + 50
             else:
                 return self.x + 20, self.y - 100, self.x + 120, self.y + 50
+        else:
+            return 0, 0, 0, 0
 
     def handle_collision(self, group, other):
         pass
