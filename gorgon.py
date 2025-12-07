@@ -106,10 +106,16 @@ class Gorgon:
                     return self.x - 110, self.y - 140, self.x - 40, self.y + 50
                 else:
                     return self.x + 40, self.y - 140, self.x + 110, self.y + 50
-            if math.cos(self.dir) < 0:
-                return self.x - 40, self.y - 140, self.x + 30, self.y + 50
+            elif self.state == 'attack':
+                if math.cos(self.dir) < 0:
+                    return self.x - 40, self.y - 140, self.x + 30, self.y + 30
+                else:
+                    return self.x - 30, self.y - 140, self.x + 40, self.y + 30
             else:
-                return self.x - 30, self.y - 140, self.x + 40, self.y + 50
+                if math.cos(self.dir) < 0:
+                    return self.x - 40, self.y - 140, self.x + 30, self.y + 50
+                else:
+                    return self.x - 30, self.y - 140, self.x + 40, self.y + 50
 
     def update(self):
         if self.state == 'die' or self.state == 'hurt':

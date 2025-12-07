@@ -49,6 +49,8 @@ def handle_events():
                 share.player = None
                 game_world.clear()
                 framework.change_mode(title_mode)
+                share.bgm = load_music('sound/title.mp3')
+                share.bgm.repeat_play()
         else:
             share.player.handle_event(event)
 
@@ -105,4 +107,12 @@ def pause():
     pass
 
 def resume():
-    pass
+    if background_manager.current_stage < 3:
+        share.bgm = load_music('sound/1.mp3')
+        share.bgm.repeat_play()
+    elif background_manager.current_stage < 7:
+        share.bgm = load_music('sound/2.mp3')
+        share.bgm.repeat_play()
+    elif background_manager.current_stage < 10:
+        share.bgm = load_music('sound/3.mp3')
+        share.bgm.repeat_play()

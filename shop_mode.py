@@ -17,8 +17,6 @@ def finish():
     game_world.remove_object(stand)
     share.player.shopping = False
     game_world.add_object(share.player.ui, 2)
-    share.bgm = load_music('sound/1.mp3')
-    share.bgm.repeat_play()
 
 def handle_events():
     events = get_events()

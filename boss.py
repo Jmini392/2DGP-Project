@@ -38,9 +38,10 @@ class Boss:
         self.power = 0
         self.stack = 0
         self.cool_time = 0.0
+        self.rest_time = 0.0
         self.sword = None
         self.sound = load_wav('sound/boss_attack2.wav')
-        self.sound.set_volume(90)
+        self.sound.set_volume(50)
         self.dir = math.atan2(share.player.y - self.y, share.player.x - self.x)
         self.ui = EnemyUI(self, 4, 0)
         game_world.add_object(self.ui, 2)
@@ -71,6 +72,8 @@ class Boss:
             if self.state == 'attack2':
                 if int(self.frame) == 2:
                     self.sound.play()
+                    if self.sword is None:
+                        self.attack(self.power)
                 if int(self.frame) == 7:
                     if self.sword is not None:
                         game_world.remove_object(self.sword)
@@ -81,10 +84,13 @@ class Boss:
                         self.attack_num = 1
                     self.state = 'idle'
                     self.frame = 0
+                    self.rest_time = 0.1
         elif self.state == 'attack1':
             div_num = 9
             if int(self.frame) == 2:
                 self.sound.play()
+                if self.sword is None:
+                    self.attack(self.power)
             if int(self.frame) == 8:
                 if self.sword is not None:
                     game_world.remove_object(self.sword)
@@ -95,10 +101,13 @@ class Boss:
                     self.attack_num = 2
                 self.state = 'idle'
                 self.frame = 0
+                self.rest_time = 0.1
         elif self.state == 'attack3':
             div_num = 10
             if int(self.frame) == 3:
                 self.sound.play()
+                if self.sword is None:
+                    self.attack(self.power)
             if int(self.frame) > 5:
                 if math.cos(self.dir) < 0:
                     self.x -= 30 * PIXEL_PER_METER * framework.frame_time
@@ -111,10 +120,13 @@ class Boss:
                 self.attack_num = 1
                 self.state = 'idle'
                 self.frame = 0
+                self.rest_time = 0.1
         elif self.state == 'attack4':
             div_num = 30
             if int(self.frame) in [2, 10, 17, 20]:
                 self.sound.play()
+                if self.sword is None:
+                    self.attack(self.power)
             if int(self.frame) == 29:
                 if self.sword is not None:
                     game_world.remove_object(self.sword)
@@ -122,10 +134,18 @@ class Boss:
                 self.attack_num = 1
                 self.frame = 0
                 self.state = 'idle'
+                self.rest_time = 0.1
         self.frame = (self.frame + ACTION_PER_TIME * self.action * framework.frame_time) % div_num
         self.bt.run()
         if self.cool_time > 0.0:
             self.cool_time -= framework.frame_time
+        if self.rest_time > 0.0:
+            self.rest_time -= framework.frame_time
+
+    def attack(self, power):
+        self.sword = Sword(self, self.power)
+        game_world.add_object(self.sword, 1)
+        game_world.add_collision_pair('player:enemy', None, self.sword)
 
     def remove(self):
         game_world.remove_object(self)
@@ -179,6 +199,12 @@ class Boss:
         else:
             return BehaviorTree.FAIL
 
+    def if_resting(self):
+        if self.rest_time > 0.0:
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
+
     def if_check_busy(self):
         if self.state in ['die', 'hurt', 'attack1', 'attack2', 'attack3', 'attack4']:
             return BehaviorTree.SUCCESS
@@ -196,10 +222,7 @@ class Boss:
         self.sound = load_wav('sound/boss_attack2.wav')
         self.stack += 1
         self.frame = 0
-        self.power = 30
-        self.sword = Sword(self, self.power)
-        game_world.add_object(self.sword, 1)
-        game_world.add_collision_pair('player:enemy', None, self.sword)
+        self.power = 20
         return BehaviorTree.SUCCESS
 
     def do_dash_attack(self):
@@ -210,9 +233,6 @@ class Boss:
         self.frame = 0
         self.power = 40
         self.cool_time = 4.0
-        self.sword = Sword(self, self.power)
-        game_world.add_object(self.sword, 1)
-        game_world.add_collision_pair('player:enemy', None, self.sword)
         return BehaviorTree.SUCCESS
 
     def do_ultimate_attack(self):
@@ -222,9 +242,6 @@ class Boss:
         self.stack = 0
         self.frame = 0
         self.power = 60
-        self.sword = Sword(self, self.power)
-        game_world.add_object(self.sword, 1)
-        game_world.add_collision_pair('player:enemy', None, self.sword)
         return BehaviorTree.SUCCESS
 
     def move_to_player(self, r = 0.5):
@@ -237,6 +254,8 @@ class Boss:
 
     def build_behavior_tree(self):
         c_busy = Condition('동작 중인지 확인', self.if_check_busy)
+
+        c_resting = Condition('휴식 중인지 확인', self.if_resting)
 
         c_stack_full = Condition('스택 확인', self.if_stack_full)
         a_ultimate = Action('궁극기 발동', self.do_ultimate_attack)
@@ -255,10 +274,9 @@ class Boss:
 
         sel_combat = Selector('전투 패턴 선택', seq_ultimate, seq_dash, seq_attack, a_chase)
 
-        root = Selector('보스 AI 루트', c_busy, sel_combat)
+        root = Selector('보스 AI 루트', c_busy, c_resting, sel_combat)
 
         self.bt = BehaviorTree(root)
-
 class Sword:
     def __init__(self, boss, damage = 30):
         self.boss = boss
@@ -286,9 +304,9 @@ class Sword:
                 return self.x + 20, self.y - 60, self.x + 80, self.y + 30
         elif self.boss.state == 'attack3':
             if math.cos(self.face_dir) < 0:
-                return self.x - 100, self.y - 80, self.x - 20, self.y + 40
+                return self.x - 100, self.y - 80, self.x - 20, self.y + 20
             else:
-                return self.x + 20, self.y - 80, self.x + 100, self.y + 40
+                return self.x + 20, self.y - 80, self.x + 100, self.y + 20
         elif self.boss.state == 'attack4':
             if math.cos(self.face_dir) < 0:
                 return self.x - 120, self.y - 100, self.x - 20, self.y + 50
